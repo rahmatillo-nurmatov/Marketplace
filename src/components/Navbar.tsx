@@ -1,0 +1,39 @@
+import React from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+
+export function Navbar() {
+  const { user, profile, logout } = useAuth();
+
+  return (
+    <header className="navbar">
+      <div className="container navbar-container">
+        <Link href="/" className="navbar-logo">
+          Merketplace
+        </Link>
+        <nav className="navbar-links">
+          <Link href="/catalog" className="navbar-link">Catalog</Link>
+          
+          {user ? (
+            <>
+              {profile?.role === 'admin' && <Link href="/admin" className="navbar-link">Admin</Link>}
+              {profile?.role === 'seller' && <Link href="/seller" className="navbar-link">Dashboard</Link>}
+              <Link href="/cart" className="navbar-link">Cart</Link>
+              <button 
+                onClick={logout}
+                className="btn-primary" 
+                style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link href="/login" className="btn-primary" style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
+              Sign In
+            </Link>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+}
