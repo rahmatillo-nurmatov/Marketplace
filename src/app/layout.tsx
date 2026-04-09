@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Merketplace",
+  title: "Marketplace",
   description: "Next Generation E-commerce Platform",
 };
 

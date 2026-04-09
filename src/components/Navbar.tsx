@@ -11,7 +11,7 @@ export function Navbar() {
     <header className="navbar">
       <div className="container navbar-container">
         <Link href="/" className="navbar-logo">
-          Merketplace
+          <span>Market</span><span style={{ color: 'var(--primary)' }}>place</span>
         </Link>
         <nav className="navbar-links">
           <Link href="/catalog" className="navbar-link">Catalog</Link>

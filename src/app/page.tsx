@@ -39,8 +39,8 @@ export default function Home() {
           ))}
         </div>
       ) : (
-        <div style={{ textAlign: 'center', padding: '4rem 0', background: 'var(--bg-card)', borderRadius: 'var(--radius)' }}>
-          <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>No products found</h3>
+        <div style={{ textAlign: 'center', padding: '4rem 0', background: 'var(--bg-card)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 600 }}>No products found</h3>
           <p style={{ color: 'var(--text-muted)' }}>Check back later or start selling!</p>
         </div>
       )}
