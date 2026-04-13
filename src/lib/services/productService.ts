@@ -30,13 +30,20 @@ export const productService = {
   },
 
   async getProductById(id: string): Promise<Product | null> {
+    // Check mocks first if it starts with mock-
+    if (id.startsWith('mock-')) {
+      return MOCK_PRODUCTS.find(p => p.id === id) || null;
+    }
+
     const docRef = doc(db, COLLECTION_NAME, id);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
       return { id: docSnap.id, ...docSnap.data() } as Product;
     }
-    return null;
+
+    // Fallback search in mocks just in case
+    return MOCK_PRODUCTS.find(p => p.id === id) || null;
   },
 
   async getSellerProducts(sellerId: string): Promise<Product[]> {
