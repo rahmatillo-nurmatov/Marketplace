@@ -16,6 +16,7 @@ export default function SellerDashboard() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
 
   const fetchProducts = () => {
     if (user?.uid) {
@@ -64,16 +65,24 @@ export default function SellerDashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 3fr)', gap: '2rem' }}>
           
           <div style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', height: 'fit-content' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem' }}>Store Management</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem' }}>{t('store_management')}</h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <li>
-                <button className="btn-primary" style={{ width: '100%', background: 'var(--bg-color)', color: 'var(--text-main)', border: '1px solid var(--border)', textAlign: 'left' }}>
-                  Manage Products
+                <button 
+                  onClick={() => setActiveTab('products')}
+                  className="btn-primary" 
+                  style={{ width: '100%', background: activeTab === 'products' ? 'var(--primary)' : 'var(--bg-color)', color: activeTab === 'products' ? 'white' : 'var(--text-main)', border: '1px solid var(--border)', textAlign: 'left' }}
+                >
+                  {t('manage_products')}
                 </button>
               </li>
               <li>
-                <button className="btn-primary" style={{ width: '100%', background: 'var(--bg-color)', color: 'var(--text-main)', border: '1px solid var(--border)', textAlign: 'left' }}>
-                  View Orders
+                <button 
+                  onClick={() => setActiveTab('orders')}
+                  className="btn-primary" 
+                  style={{ width: '100%', background: activeTab === 'orders' ? 'var(--primary)' : 'var(--bg-color)', color: activeTab === 'orders' ? 'white' : 'var(--text-main)', border: '1px solid var(--border)', textAlign: 'left' }}
+                >
+                  {t('view_orders')}
                 </button>
               </li>
               <li>
@@ -85,10 +94,14 @@ export default function SellerDashboard() {
           </div>
 
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>Your Products</h2>
-            {loading ? (
-              <div>{t('processing')}</div>
-            ) : products.length > 0 ? (
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>
+              {activeTab === 'products' ? t('your_products') : t('view_orders')}
+            </h2>
+            
+            {activeTab === 'products' ? (
+              loading ? (
+                <div>{t('processing')}</div>
+              ) : products.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {products.map(product => (
                   <div key={product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', padding: '1rem 1.5rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)' }}>
@@ -118,7 +131,11 @@ export default function SellerDashboard() {
               </div>
             ) : (
               <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--bg-card)', borderRadius: 'var(--radius)' }}>
-                <p style={{ color: 'var(--text-muted)' }}>You don't have any products yet.</p>
+                <p style={{ color: 'var(--text-muted)' }}>{t('no_products')}</p>
+              </div>
+            )) : (
+              <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--bg-card)', borderRadius: 'var(--radius)' }}>
+                <p style={{ color: 'var(--text-muted)' }}>{t('no_orders')}</p>
               </div>
             )}
           </div>

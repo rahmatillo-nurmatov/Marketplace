@@ -34,7 +34,15 @@ export const translations = {
     to_date: "To Date",
     total_expenses: "Total Expenses",
     order_id: "Order ID",
-    status: "Status"
+    status: "Status",
+    hero_title: "Discover Amazing Products",
+    hero_subtitle: "Explore our premium catalog.",
+    manage_products: "Manage Products",
+    view_orders: "View Orders",
+    your_products: "Your Products",
+    seed_data: "Seed Mock Data",
+    no_orders: "No orders found yet.",
+    store_management: "Store Management"
   },
   ru: {
     catalog: "Каталог",
@@ -69,6 +77,14 @@ export const translations = {
     to_date: "До даты",
     total_expenses: "Всего расходов",
     order_id: "ID заказа",
-    status: "Статус"
+    status: "Статус",
+    hero_title: "Откройте для себя лучшее",
+    hero_subtitle: "Исследуйте наш премиальный каталог.",
+    manage_products: "Мои товары",
+    view_orders: "Мои заказы",
+    your_products: "Ваши товары",
+    seed_data: "Создать мок-данные",
+    no_orders: "Заказов пока нет.",
+    store_management: "Управление магазином"
   }
 };
