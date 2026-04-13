@@ -42,19 +42,19 @@ export function ProductCard({ product }: { product: Product }) {
       e.currentTarget.style.transform = 'none';
       e.currentTarget.style.boxShadow = 'var(--shadow)';
     }}>
-      <div style={{ width: '100%', height: '200px', backgroundImage: `url(${mainImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+      <div style={{ width: '100%', height: '200px', backgroundImage: `url(${product.images?.[0] || 'https://via.placeholder.com/300x200?text=No+Image'})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
       <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.5rem 0' }}>{product.name}</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem', flexGrow: 1 }}>{product.description.substring(0, 80)}...</p>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.5rem 0' }}>{displayName}</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem', flexGrow: 1 }}>{displayDesc.substring(0, 80)}...</p>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)' }}>{formatPrice(product.price)}</span>
+          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)' }}>${product.price.toFixed(2)}</span>
           {user && (
             <button 
               onClick={handleAddToCart}
               className="btn-primary" 
               style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.875rem' }}
             >
-              Add
+              {t('add_to_cart')}
             </button>
           )}
         </div>

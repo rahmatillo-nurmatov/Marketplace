@@ -42,7 +42,26 @@ export const translations = {
     your_products: "Your Products",
     seed_data: "Seed Mock Data",
     no_orders: "No orders found yet.",
-    store_management: "Store Management"
+    store_management: "Store Management",
+    checkout: "Checkout",
+    empty_cart: "Your cart is empty",
+    total_price: "Total Price",
+    quantity: "Quantity",
+    remove: "Remove",
+    go_to_checkout: "Go to Checkout",
+    // Mock Product Names & Descriptions
+    "iPhone 15": "iPhone 15",
+    "iPhone 15_desc": "Latest model with 48MP camera and advanced features.",
+    "Sony Headphones": "Sony Headphones",
+    "Sony Headphones_desc": "High-quality noise-canceling wireless headphones.",
+    "Red Sneakers": "Red Sneakers",
+    "Red Sneakers_desc": "Casual comfortable red sneakers for everyday wear.",
+    "Office Chair": "Office Chair",
+    "Office Chair_desc": "Comfortable ergonomic chair for long working hours.",
+    "Mechanical Keyboard": "Mechanical Keyboard",
+    "Mechanical Keyboard_desc": "Full RGB backlit mechanical gaming keyboard.",
+    "Smart Watch": "Smart Watch",
+    "Smart Watch_desc": "Modern smartwatch with health tracking and GPS."
   },
   ru: {
     catalog: "Каталог",
@@ -85,6 +104,25 @@ export const translations = {
     your_products: "Ваши товары",
     seed_data: "Создать мок-данные",
     no_orders: "Заказов пока нет.",
-    store_management: "Управление магазином"
+    store_management: "Управление магазином",
+    checkout: "Оформить заказ",
+    empty_cart: "Ваша корзина пуста",
+    total_price: "Итоговая цена",
+    quantity: "Кол-во",
+    remove: "Удалить",
+    go_to_checkout: "Перейти к оформлению",
+    // Mock Product Names & Descriptions
+    "iPhone 15": "iPhone 15",
+    "iPhone 15_desc": "Последняя модель с камерой 48 МП и расширенными функциями.",
+    "Sony Headphones": "Наушники Sony",
+    "Sony Headphones_desc": "Высококачественные беспроводные наушники с шумоподавлением.",
+    "Red Sneakers": "Красные кроссовки",
+    "Red Sneakers_desc": "Повседневные удобные красные кроссовки на каждый день.",
+    "Office Chair": "Офисное кресло",
+    "Office Chair_desc": "Удобное эргономичное кресло для долгой работы.",
+    "Mechanical Keyboard": "Механическая клавиатура",
+    "Mechanical Keyboard_desc": "Механическая игровая клавиатура с RGB-подсветкой.",
+    "Smart Watch": "Смарт-часы",
+    "Smart Watch_desc": "Современные смарт-часы с отслеживанием здоровья и GPS."
   }
 };
