@@ -7,7 +7,7 @@ export const MOCK_PRODUCTS: Product[] = [
     name: 'iPhone 15 Pro',
     description: 'Experience the pinnacle of mobile technology with the iPhone 15 Pro. Featuring a stunning Titanium design, the powerful A17 Pro chip for next-level gaming performance, and a versatile 48MP Pro camera system that captures breathtaking detail.',
     price: 999.00, cost: 700.00, stock: 15, categoryId: 'electronics',
-    images: ['https://images.unsplash.com/photo-1695048133142-1a20484d256e?auto=format&fit=crop&q=80&w=1200'],
+    images: ['https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&q=80&w=1200'],
     sellerId: 'system', createdAt: Date.now(), updatedAt: Date.now()
   },
   {
@@ -15,7 +15,7 @@ export const MOCK_PRODUCTS: Product[] = [
     name: 'Sony WH-1000XM5',
     description: 'Industry-leading noise cancellation meets exceptional sound quality. These headphones feature two processors that control eight microphones for unprecedented noise reduction and crystal-clear hands-free calling.',
     price: 349.00, cost: 200.00, stock: 20, categoryId: 'electronics',
-    images: ['https://images.unsplash.com/photo-1616763355548-1b606f439f86?auto=format&fit=crop&q=80&w=1200'],
+    images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=1200'],
     sellerId: 'system', createdAt: Date.now(), updatedAt: Date.now()
   },
   {
@@ -31,7 +31,7 @@ export const MOCK_PRODUCTS: Product[] = [
     name: 'iPad Pro 12.9',
     description: 'The ultimate iPad experience. Now with breakthrough M2 performance, a mind-blowing Liquid Retina XDR display, and superfast wireless connectivity. It is the perfect tool for creators and professionals on the go.',
     price: 899.00, cost: 650.00, stock: 12, categoryId: 'electronics',
-    images: ['https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=1200'],
+    images: ['https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?auto=format&fit=crop&q=80&w=1200'],
     sellerId: 'system', createdAt: Date.now(), updatedAt: Date.now()
   },
   {

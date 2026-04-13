@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Neon Cyberspace Palette */
+  /* Neon Cyberspace Palette (Dark) */
   --bg-deep: #06050a;
   --bg-side: #0e0d16;
   --bg-card: rgba(255, 255, 255, 0.03);
@@ -26,10 +26,25 @@
   --glass: blur(12px) saturate(180%);
 }
 
+.light-theme {
+  --bg-deep: #f8f9ff;
+  --bg-side: #ffffff;
+  --bg-card: rgba(0, 0, 0, 0.02);
+  --bg-card-hover: rgba(0, 0, 0, 0.05);
+  
+  --text-main: #06050a;
+  --text-muted: #6b7280;
+  
+  --border: rgba(0, 0, 0, 0.06);
+  --border-focus: rgba(138, 63, 252, 0.3);
+  --shadow-neon: 0 10px 30px rgba(138, 63, 252, 0.1);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
 }
 
 body {

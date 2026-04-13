@@ -1,141 +1,87 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { orderService } from '@/lib/services/orderService';
-import { Order } from '@/types';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Clock, Calendar, Hash, DollarSign } from 'lucide-react';
 
 export default function HistoryPage() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     if (user?.uid) {
-      orderService.getOrdersByClient(user.uid)
+      orderService.getUserOrders(user.uid)
         .then(data => {
-          setOrders(data);
-          setFilteredOrders(data);
+          if (Array.isArray(data)) setOrders(data);
+          setLoading(false);
         })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+        .catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
     }
   }, [user]);
 
-  useEffect(() => {
-    let filtered = [...orders];
-    
-    if (startDate) {
-      const start = new Date(startDate).getTime();
-      filtered = filtered.filter(o => o.createdAt >= start);
-    }
-    
-    if (endDate) {
-      const end = new Date(endDate).getTime() + 86400000; // Include the whole end day
-      filtered = filtered.filter(o => o.createdAt <= end);
-    }
-    
-    setFilteredOrders(filtered);
-  }, [startDate, endDate, orders]);
-
-  const totalSpent = filteredOrders.reduce((sum, o) => sum + o.total, 0);
-
   return (
-    <ProtectedRoute>
-      <div className="container" style={{ padding: '4rem 0' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2rem' }}>{t('history_expenses')}</h1>
-
-        <div style={{ 
-          background: 'var(--bg-card)', 
-          padding: '2rem', 
-          borderRadius: 'var(--radius)', 
-          border: '1px solid var(--border)',
-          marginBottom: '3rem',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '2rem',
-          alignItems: 'flex-end'
-        }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{t('from_date')}</label>
-            <input 
-              type="date" 
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              style={{ background: 'var(--bg-color)', border: '1px solid var(--border)', color: 'var(--text-main)', padding: '0.6rem', borderRadius: '8px' }}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{t('to_date')}</label>
-            <input 
-              type="date" 
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              style={{ background: 'var(--bg-color)', border: '1px solid var(--border)', color: 'var(--text-main)', padding: '0.6rem', borderRadius: '8px' }}
-            />
-          </div>
-          <div style={{ flexGrow: 1, textAlign: 'right' }}>
-            <div style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>{t('total_expenses')}:</div>
-            <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)' }}>${totalSpent.toFixed(2)}</div>
-          </div>
-        </div>
+    <ProtectedRoute allowedRoles={['client', 'seller', 'admin']}>
+      <div style={{ padding: '2rem 0' }}>
+        <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '3rem' }}>История расходов</h1>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem' }}>{t('processing')}</div>
-        ) : filteredOrders.length > 0 ? (
+          <div style={{ textAlign: 'center', padding: '5rem' }}>Загрузка истории...</div>
+        ) : orders.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {filteredOrders.map(order => (
-              <div key={order.id} style={{ 
-                background: 'var(--bg-card)', 
-                padding: '1.5rem', 
-                borderRadius: 'var(--radius)', 
-                border: '1px solid var(--border)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: '2rem'
-              }}>
-                <div style={{ flexGrow: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <div style={{ fontWeight: 600 }}>{t('order_id')}: {order.id.slice(0, 8)}...</div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{new Date(order.createdAt).toLocaleDateString()}</div>
+            {orders.map(order => (
+              <div key={order.id} className="glass-card" style={{ padding: '2rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '2rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ width: '40px', height: '40px', background: 'rgba(138, 63, 252, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Hash size={18} color="var(--primary)" />
                   </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                    {order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}
+                  <div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>ID Заказа</p>
+                    <p style={{ fontWeight: 700 }}>#{order.id.substring(0, 8)}</p>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right', minWidth: '100px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--primary)' }}>${order.total.toFixed(2)}</div>
-                  <div style={{ 
-                    fontSize: '0.75rem', 
-                    padding: '2px 8px', 
-                    borderRadius: '12px', 
-                    background: 'var(--bg-color)', 
-                    display: 'inline-block',
-                    marginTop: '0.5rem',
-                    textTransform: 'capitalize'
-                  }}>
-                    {t('status')}: {order.status}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                   <div style={{ width: '40px', height: '40px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Calendar size={18} color="var(--text-muted)" />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Дата</p>
+                    <p style={{ fontWeight: 600 }}>{new Date(order.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ width: '40px', height: '40px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Clock size={18} color="#10B981" />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Статус</p>
+                    <p style={{ fontWeight: 700, color: '#10B981', textTransform: 'capitalize' }}>{order.status}</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'flex-end' }}>
+                   <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Сумма</p>
+                    <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>${order.total.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '6rem', 
-            background: 'var(--bg-card)', 
-            borderRadius: 'var(--radius)',
-            border: '1px solid var(--border)'
-          }}>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>{t('no_products')}</h3>
+          <div className="glass-card" style={{ padding: '6rem', textAlign: 'center', borderStyle: 'dashed' }}>
+             <Clock size={48} style={{ opacity: 0.2, marginBottom: '1.5rem', display: 'block', margin: '0 auto' }} />
+             <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>У вас пока нет истории заказов</p>
+             <button className="btn-neon" style={{ marginTop: '2rem' }} onClick={() => window.location.href = '/'}>Начать покупки</button>
           </div>
         )}
       </div>
