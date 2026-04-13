@@ -5,21 +5,21 @@ import Link from 'next/link';
 import { Product } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function ProductCard({ product }: { product: Product }) {
   const { user } = useAuth();
   const { addToCart } = useCart();
-  const mainImage = product.images?.[0] || 'https://via.placeholder.com/300x200?text=No+Image';
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-  };
+  const { t } = useLanguage();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product, 1);
   };
+
+  const displayName = t(product.name as any) || product.name;
+  const displayDesc = t(`${product.name}_desc` as any) || product.description;
 
   return (
     <Link href={`/products/${product.id}`} className="product-card" style={{

@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { items, removeFromCart, updateQuantity, total } = useCart();
   const { t } = useLanguage();
 
   return (
@@ -15,7 +15,7 @@ export default function CartPage() {
       <div className="container" style={{ padding: '4rem 0' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2.5rem' }}>{t('cart')}</h1>
 
-        {cart.length === 0 ? (
+        {items.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '6rem', background: 'var(--bg-card)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
             <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>🛒</div>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>{t('empty_cart')}</h2>
@@ -26,7 +26,7 @@ export default function CartPage() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '3rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {cart.map((item) => (
+              {items.map((item) => (
                 <div key={item.id} style={{ 
                   display: 'flex', 
                   gap: '1.5rem', 
@@ -58,7 +58,7 @@ export default function CartPage() {
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem' }}>{t('checkout')}</h2>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '1.125rem' }}>
                   <span>{t('total_price')}</span>
-                  <span style={{ fontWeight: 800, color: 'var(--primary)' }}>${totalPrice.toFixed(2)}</span>
+                  <span style={{ fontWeight: 800, color: 'var(--primary)' }}>${total.toFixed(2)}</span>
                 </div>
                 <Link href="/checkout" className="btn-primary" style={{ textAlign: 'center' }}>
                   {t('go_to_checkout')}
