@@ -55,51 +55,70 @@ function HomeContent() {
   ];
 
   return (
-    <div className="container" style={{ padding: '4rem 0' }}>
-      <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '1.5rem', background: 'linear-gradient(to right, var(--primary), #9333EA)', WebkitBackgroundClip: 'text', color: 'transparent' }}>
-          {t('hero_title')}
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>{t('hero_subtitle')}</p>
+    <div style={{ paddingBottom: '4rem' }}>
+      {/* Search Sub-Nav */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => handleCategoryChange(cat.id)}
+              className="glass-card"
+              style={{
+                width: 'auto',
+                padding: '0.6rem 1.25rem',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                background: selectedCategory === cat.id ? 'rgba(138, 63, 252, 0.15)' : 'var(--bg-card)',
+                color: selectedCategory === cat.id ? 'var(--primary)' : 'var(--text-muted)',
+                borderColor: selectedCategory === cat.id ? 'var(--primary)' : 'var(--border)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderRadius: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+          See All →
+        </div>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        gap: '1rem', 
-        marginBottom: '4rem',
-        overflowX: 'auto',
-        padding: '0.5rem',
-        scrollbarWidth: 'none'
+      {/* Hero Banner */}
+      <div className="glass-card" style={{ 
+        padding: '3rem', 
+        marginBottom: '4rem', 
+        background: 'linear-gradient(135deg, rgba(138, 63, 252, 0.2), rgba(0, 224, 255, 0.05))',
+        position: 'relative',
+        overflow: 'hidden',
+        border: '1px solid rgba(138, 63, 252, 0.3)'
       }}>
-        {categories.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => handleCategoryChange(cat.id)}
-            className="btn-primary"
-            style={{
-              width: 'auto',
-              padding: '0.75rem 2rem',
-              fontSize: '1rem',
-              fontWeight: 600,
-              background: selectedCategory === cat.id ? 'var(--primary)' : 'var(--bg-card)',
-              color: selectedCategory === cat.id ? 'white' : 'var(--text-main)',
-              border: '1px solid var(--border)',
-              borderRadius: '50px',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.3s ease',
-              boxShadow: selectedCategory === cat.id ? '0 10px 20px rgba(79, 70, 229, 0.3)' : 'none'
-            }}
-          >
-            {cat.label}
-          </button>
-        ))}
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: '600px' }}>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem' }}>{t('hero_title')}</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', marginBottom: '2rem' }}>{t('hero_subtitle')}</p>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button className="btn-neon">Explore Now</button>
+            <button className="glass-card" style={{ padding: '0.8rem 1.5rem', fontWeight: 600 }}>Whitepaper</button>
+          </div>
+        </div>
+        
+        {/* Abstract shapes to mimic the crypto card in the image */}
+        <div style={{ position: 'absolute', right: '5%', top: '50%', transform: 'translateY(-50%)', width: '300px', height: '180px', background: 'linear-gradient(135deg, #8a3ffc, #4F46E5)', borderRadius: '20px', opacity: 0.6, boxShadow: '0 0 50px rgba(138, 63, 252, 0.3)' }} />
+        <div style={{ position: 'absolute', right: '10%', top: '40%', width: '100px', height: '100px', background: 'var(--accent)', borderRadius: '50%', filter: 'blur(40px)', opacity: 0.3 }} />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Featured Items</h2>
+        <div style={{ color: 'var(--primary)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}>View all catalog →</div>
       </div>
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '4rem 0' }}>{t('loading_products')}</div>
       ) : filteredProducts.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
           {filteredProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}

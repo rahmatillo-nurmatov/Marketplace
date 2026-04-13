@@ -19,19 +19,24 @@ export const metadata: Metadata = {
   description: "Next Generation E-commerce Platform",
 };
 
+import { Sidebar } from "@/components/Sidebar";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>
+    <html lang="en">
+      <body className="antialiased">
         <Providers>
-          <Navbar />
-          <main className="container container-padding min-h-screen">
-            {children}
-          </main>
+          <div className="app-container">
+            <Sidebar />
+            <main className="main-content">
+              <Navbar />
+              {children}
+            </main>
+          </div>
         </Providers>
       </body>
     </html>

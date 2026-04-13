@@ -39,37 +39,42 @@ export default function ProductDetailPage() {
   const displayDesc = t(`${product.name}_desc` as any) || product.description;
 
   return (
-    <div className="container" style={{ padding: '4rem 0' }}>
+    <div style={{ padding: '2rem 0' }}>
       <button 
         onClick={() => router.back()} 
-        style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', marginBottom: '3rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '1rem' }}
       >
         ← {t('back_to_catalog')}
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '4rem' }}>
-        <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '5rem', alignItems: 'start' }}>
+        <div className="glass-card" style={{ padding: '1.5rem', border: '1px solid var(--border-focus)' }}>
           <img 
             src={product.images[0] || 'https://via.placeholder.com/600x400'} 
             alt={displayName} 
-            style={{ width: '100%', height: 'auto', display: 'block' }} 
+            style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 'var(--radius-md)' }} 
           />
         </div>
 
         <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem' }}>{displayName}</h1>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '2rem' }}>${product.price.toFixed(2)}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            <span className="badge-pro">Featured Item</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>ID: {product.id}</span>
+          </div>
           
-          <div style={{ marginBottom: '2.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>{t('description')}</h3>
-            <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '1.125rem' }}>{displayDesc}</p>
+          <h1 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-2px' }}>{displayName}</h1>
+          <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '3rem', textShadow: '0 0 30px rgba(138, 63, 252, 0.4)' }}>${product.price.toFixed(2)}</div>
+          
+          <div className="glass-card" style={{ padding: '2rem', marginBottom: '3rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-main)' }}>{t('description')}</h3>
+            <p style={{ color: 'var(--text-muted)', lineHeight: '1.8', fontSize: '1.125rem' }}>{displayDesc}</p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0', borderTop: '1px solid var(--border)' }}>
-              <span style={{ color: 'var(--text-muted)' }}>{t('status')}</span>
-              <span style={{ fontWeight: 600, color: product.stock > 0 ? '#10B981' : 'var(--danger)' }}>
-                {product.stock > 0 ? t('stock') + `: ${product.stock}` : 'Out of Stock'}
+          <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Availability Status</span>
+              <span style={{ fontWeight: 800, color: product.stock > 0 ? '#10B981' : '#EF4444', background: product.stock > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', padding: '4px 12px', borderRadius: '6px' }}>
+                {product.stock > 0 ? `In Stock: ${product.stock}` : 'Out of Stock'}
               </span>
             </div>
             
@@ -77,18 +82,18 @@ export default function ProductDetailPage() {
               <button 
                 onClick={() => addToCart(product)}
                 disabled={product.stock <= 0}
-                className="btn-primary" 
-                style={{ padding: '1.25rem', fontSize: '1.125rem' }}
+                className="btn-neon" 
+                style={{ padding: '1.5rem', fontSize: '1.25rem', borderRadius: '16px' }}
               >
                 {t('add_to_cart')}
               </button>
             ) : (
               <button 
                 onClick={() => router.push('/login')}
-                className="btn-primary" 
-                style={{ padding: '1.25rem', fontSize: '1.125rem' }}
+                className="btn-neon" 
+                style={{ padding: '1.5rem', fontSize: '1.25rem', borderRadius: '16px' }}
               >
-                {t('login')} to Buy
+                {t('login')} to Purchase
               </button>
             )}
           </div>

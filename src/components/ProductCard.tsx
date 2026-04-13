@@ -22,41 +22,47 @@ export function ProductCard({ product }: { product: Product }) {
   const displayDesc = t(`${product.name}_desc` as any) || product.description;
 
   return (
-    <Link href={`/products/${product.id}`} className="product-card" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'var(--bg-card)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)',
-      overflow: 'hidden',
-      boxShadow: 'var(--shadow)',
-      transition: 'all 0.3s ease'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.transform = 'translateY(-5px)';
-      e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.transform = 'none';
-      e.currentTarget.style.boxShadow = 'var(--shadow)';
-    }}>
-      <div style={{ width: '100%', height: '200px', backgroundImage: `url(${product.images?.[0] || 'https://via.placeholder.com/300x200?text=No+Image'})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-      <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.5rem 0' }}>{displayName}</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem', flexGrow: 1 }}>{displayDesc.substring(0, 80)}...</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)' }}>${product.price.toFixed(2)}</span>
-          {user && (
-            <button 
-              onClick={handleAddToCart}
-              className="btn-primary" 
-              style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-            >
-              {t('add_to_cart')}
-            </button>
-          )}
+    <Link href={`/products/${product.id}`} className="glass-card product-card-cyber" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--accent))', padding: '2px' }}>
+          <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--bg-side)', overflow: 'hidden' }}>
+            <img src={product.images?.[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        </div>
+        <div>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>{displayName}</h3>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>{product.stock} items left</p>
+        </div>
+      </div>
+
+      <div style={{ position: 'relative', height: '100px', marginBottom: '1.25rem', borderRadius: '12px', overflow: 'hidden', background: 'rgba(0,0,0,0.2)' }}>
+        <img src={product.images?.[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} />
+        <div className="chart-line" />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+        <div>
+          <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>Mkt Price</p>
+          <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>${product.price.toFixed(2)}</p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>ROI Est.</p>
+          <p style={{ fontSize: '1rem', fontWeight: 700, color: '#10B981' }}>+{(Math.random() * 10 + 2).toFixed(2)}%</p>
+        </div>
+      </div>
+
+      <button onClick={handleAddToCart} className="btn-neon" style={{ width: '100%', borderRadius: '12px' }}>
+        {t('add_to_cart')}
+      </button>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+        <div>
+          <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Win Rate</p>
+          <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>{(Math.random() * 30 + 60).toFixed(2)}%</p>
+        </div>
+        <div>
+          <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Max DD</p>
+          <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>{(Math.random() * 5 + 5).toFixed(2)}%</p>
         </div>
       </div>
     </Link>
