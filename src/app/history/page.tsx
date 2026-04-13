@@ -5,9 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { orderService } from '@/lib/services/orderService';
 import { Order } from '@/types';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function HistoryPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +50,7 @@ export default function HistoryPage() {
   return (
     <ProtectedRoute>
       <div className="container" style={{ padding: '4rem 0' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2rem' }}>Order History & Expenses</h1>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2rem' }}>{t('history_expenses')}</h1>
 
         <div style={{ 
           background: 'var(--bg-card)', 
@@ -62,7 +64,7 @@ export default function HistoryPage() {
           alignItems: 'flex-end'
         }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>From Date</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{t('from_date')}</label>
             <input 
               type="date" 
               value={startDate}
@@ -71,7 +73,7 @@ export default function HistoryPage() {
             />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>To Date</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>{t('to_date')}</label>
             <input 
               type="date" 
               value={endDate}
@@ -80,13 +82,13 @@ export default function HistoryPage() {
             />
           </div>
           <div style={{ flexGrow: 1, textAlign: 'right' }}>
-            <div style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>Total Expenses in Period:</div>
+            <div style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>{t('total_expenses')}:</div>
             <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)' }}>${totalSpent.toFixed(2)}</div>
           </div>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem' }}>Loading your history...</div>
+          <div style={{ textAlign: 'center', padding: '4rem' }}>{t('processing')}</div>
         ) : filteredOrders.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {filteredOrders.map(order => (
@@ -101,7 +103,7 @@ export default function HistoryPage() {
               }}>
                 <div style={{ flexGrow: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <div style={{ fontWeight: 600 }}>Order ID: {order.id.slice(0, 8)}...</div>
+                    <div style={{ fontWeight: 600 }}>{t('order_id')}: {order.id.slice(0, 8)}...</div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{new Date(order.createdAt).toLocaleDateString()}</div>
                   </div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
@@ -119,7 +121,7 @@ export default function HistoryPage() {
                     marginTop: '0.5rem',
                     textTransform: 'capitalize'
                   }}>
-                    {order.status}
+                    {t('status')}: {order.status}
                   </div>
                 </div>
               </div>
@@ -133,8 +135,7 @@ export default function HistoryPage() {
             borderRadius: 'var(--radius)',
             border: '1px solid var(--border)'
           }}>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>No orders found for this period</h3>
-            <p style={{ color: 'var(--text-muted)' }}>Try adjusting your date range or start shopping!</p>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>{t('no_products')}</h3>
           </div>
         )}
       </div>

@@ -6,12 +6,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Product } from '@/types';
 import { productService } from '@/lib/services/productService';
 import { AddProductModal } from '@/components/AddProductModal';
+import { EditProductModal } from '@/components/EditProductModal';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function SellerDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const fetchProducts = () => {
     if (user?.uid) {
@@ -27,6 +31,18 @@ export default function SellerDashboard() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await productService.deleteProduct(id);
+        fetchProducts();
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting product');
+      }
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, [user]);
@@ -34,9 +50,16 @@ export default function SellerDashboard() {
   return (
     <ProtectedRoute allowedRoles={['client', 'seller', 'admin']}>
       <div className="container" style={{ padding: '4rem 0' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2rem' }}>Seller Dashboard</h1>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2rem' }}>{t('dashboard')}</h1>
         
         {isModalOpen && <AddProductModal onClose={() => setIsModalOpen(false)} onSuccess={fetchProducts} />}
+        {editingProduct && (
+          <EditProductModal 
+            product={editingProduct} 
+            onClose={() => setEditingProduct(null)} 
+            onSuccess={fetchProducts} 
+          />
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 3fr)', gap: '2rem' }}>
           
@@ -55,7 +78,7 @@ export default function SellerDashboard() {
               </li>
               <li>
                 <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-                  + Add New Product
+                  + {t('add_new_product')}
                 </button>
               </li>
             </ul>
@@ -64,7 +87,7 @@ export default function SellerDashboard() {
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>Your Products</h2>
             {loading ? (
-              <div>Loading...</div>
+              <div>{t('processing')}</div>
             ) : products.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {products.map(product => (
@@ -77,8 +100,18 @@ export default function SellerDashboard() {
                       </div>
                     </div>
                     <div>
-                      <button style={{ marginRight: '1rem', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
-                      <button style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>Delete</button>
+                      <button 
+                        onClick={() => setEditingProduct(product)}
+                        style={{ marginRight: '1rem', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(product.id)}
+                        style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 ))}

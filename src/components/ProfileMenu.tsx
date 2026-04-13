@@ -4,12 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { db } from '@/lib/firebase/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 export function ProfileMenu() {
   const { user, profile, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isEditingNick, setIsEditingNick] = useState(false);
   const [newNick, setNewNick] = useState(profile?.displayName || '');
@@ -35,8 +37,6 @@ export function ProfileMenu() {
       const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, { displayName: newNick });
       setIsEditingNick(false);
-      // Profile in AuthContext will be updated on next onAuthStateChanged or we can manually refresh
-      // For simplicity in MVP, we assume it's updated or user refreshes
       window.location.reload(); 
     } catch (err) {
       console.error(err);
@@ -55,6 +55,10 @@ export function ProfileMenu() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'ru' : 'en');
   };
 
   return (
@@ -110,7 +114,7 @@ export function ProfileMenu() {
               </form>
             ) : (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontWeight: 600 }}>{profile?.displayName || 'User'}</div>
+                <div style={{ fontWeight: 600 }}>{profile?.displayName || t('profile')}</div>
                 <button onClick={() => setIsEditingNick(true)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.75rem' }}>Edit</button>
               </div>
             )}
@@ -119,13 +123,13 @@ export function ProfileMenu() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <Link href="/cart" onClick={() => setIsOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-main)', fontSize: '0.875rem' }}>
-              <span>🛒</span> View Cart
+              <span>🛒</span> {t('view_cart')}
             </Link>
             <Link href="/seller" onClick={() => setIsOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-main)', fontSize: '0.875rem' }}>
-              <span>💰</span> Sell Products (Dashboard)
+              <span>💰</span> {t('sell_products')}
             </Link>
             <Link href="/history" onClick={() => setIsOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-main)', fontSize: '0.875rem' }}>
-              <span>📜</span> History & Expenses
+              <span>📜</span> {t('history_expenses')}
             </Link>
             
             <div style={{ height: '1px', background: 'var(--border)', margin: '0.5rem 0' }} />
@@ -139,21 +143,29 @@ export function ProfileMenu() {
                     onChange={(e) => setCardNumber(e.target.value)}
                     style={{ background: 'var(--bg-color)', border: '1px solid var(--border)', color: 'var(--text-main)', padding: '0.4rem', borderRadius: '4px' }}
                   />
-                  <button type="submit" className="btn-primary" style={{ padding: '0.25rem', fontSize: '0.75rem' }}>Add Card</button>
+                  <button type="submit" className="btn-primary" style={{ padding: '0.25rem', fontSize: '0.75rem' }}>{t('add_card')}</button>
                 </form>
               ) : (
                 <button onClick={() => setIsAddingCard(true)} style={{ background: 'none', border: 'none', color: 'var(--text-main)', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span>💳</span> Add Payment Card
+                  <span>💳</span> {t('add_card')}
                 </button>
               )}
             </div>
 
-            <button 
-              onClick={toggleTheme}
-              style={{ background: 'none', border: 'none', color: 'var(--text-main)', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', textAlign: 'left', fontSize: '0.875rem' }}
-            >
-              <span>{theme === 'dark' ? '☀️' : '🌙'}</span> {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button 
+                onClick={toggleTheme}
+                style={{ background: 'none', border: 'none', color: 'var(--text-main)', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', textAlign: 'left', fontSize: '0.875rem' }}
+              >
+                <span>{theme === 'dark' ? '☀️' : '🌙'}</span> {theme === 'dark' ? t('light_mode') : t('dark_mode')}
+              </button>
+              <button 
+                onClick={toggleLanguage}
+                style={{ background: 'var(--bg-color)', border: '1px solid var(--border)', color: 'var(--text-main)', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}
+              >
+                {language === 'en' ? 'RU' : 'EN'}
+              </button>
+            </div>
 
             <div style={{ height: '1px', background: 'var(--border)', margin: '0.5rem 0' }} />
 
@@ -161,7 +173,7 @@ export function ProfileMenu() {
               onClick={logout}
               style={{ background: 'none', border: 'none', color: 'var(--danger)', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600 }}
             >
-              <span>🚪</span> Logout
+              <span>🚪</span> {t('logout')}
             </button>
           </div>
         </div>

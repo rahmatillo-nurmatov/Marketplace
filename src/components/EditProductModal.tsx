@@ -5,21 +5,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { productService } from '@/lib/services/productService';
 import { storageService } from '@/lib/services/storageService';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Product } from '@/types';
 
-interface AddProductModalProps {
+interface EditProductModalProps {
+  product: Product;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
+export function EditProductModal({ product, onClose, onSuccess }: EditProductModalProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    cost: '',
-    stock: '',
+    name: product.name,
+    description: product.description,
+    price: product.price.toString(),
+    cost: product.cost.toString(),
+    stock: product.stock.toString(),
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,27 +32,25 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
     
     setLoading(true);
     try {
-      let imageUrl = 'https://via.placeholder.com/600x400?text=Product+Image';
+      let imageUrl = product.images?.[0];
       
       if (imageFile) {
         imageUrl = await storageService.uploadProductImage(imageFile, user.uid);
       }
 
-      await productService.addProduct({
+      await productService.updateProduct(product.id, {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
         cost: parseFloat(formData.cost),
         stock: parseInt(formData.stock),
-        images: [imageUrl],
-        sellerId: user.uid,
-        categoryId: 'general',
+        images: [imageUrl || 'https://via.placeholder.com/600x400?text=Product+Image'],
       });
       onSuccess();
       onClose();
     } catch (err) {
       console.error(err);
-      alert('Error adding product');
+      alert('Error updating product');
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
         maxWidth: '500px',
         boxShadow: 'var(--shadow-lg)'
       }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center' }}>{t('add_new_product')}</h2>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center' }}>{t('edit_product')}</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{t('catalog')} Name</label>
@@ -134,7 +134,6 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
               style={{ width: '100%', background: 'var(--bg-color)', border: '1px solid var(--border)', color: 'var(--text-main)', padding: '0.75rem', borderRadius: '8px' }}
             />
           </div>
-
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{t('image')}</label>
             <input 
@@ -147,7 +146,7 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
             <button type="button" onClick={onClose} style={{ flex: 1, background: 'none', border: '1px solid var(--border)', color: 'var(--text-main)', padding: '0.75rem', borderRadius: '8px', cursor: 'pointer' }}>{t('cancel')}</button>
-            <button type="submit" disabled={loading} className="btn-primary" style={{ flex: 2 }}>{loading ? t('processing') : t('add_new_product')}</button>
+            <button type="submit" disabled={loading} className="btn-primary" style={{ flex: 2 }}>{loading ? t('processing') : t('save_changes')}</button>
           </div>
         </form>
       </div>
