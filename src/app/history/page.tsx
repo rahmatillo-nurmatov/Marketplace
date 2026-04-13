@@ -15,7 +15,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (user?.uid) {
-      orderService.getUserOrders(user.uid)
+      orderService.getOrdersByClient(user.uid)
         .then(data => {
           if (Array.isArray(data)) setOrders(data);
           setLoading(false);
