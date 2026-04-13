@@ -27,17 +27,18 @@
 }
 
 .light-theme {
-  --bg-deep: #f8f9ff;
+  --bg-deep: #f1f3f6; /* Softer, slightly gray background */
   --bg-side: #ffffff;
-  --bg-card: rgba(0, 0, 0, 0.02);
-  --bg-card-hover: rgba(0, 0, 0, 0.05);
+  --bg-card: #ffffff;  /* Solid cards for light theme */
+  --bg-card-hover: #fafafa;
   
-  --text-main: #06050a;
-  --text-muted: #6b7280;
+  --text-main: #1a1a2e;
+  --text-muted: #5e6675;
   
-  --border: rgba(0, 0, 0, 0.06);
-  --border-focus: rgba(138, 63, 252, 0.3);
-  --shadow-neon: 0 10px 30px rgba(138, 63, 252, 0.1);
+  --border: rgba(0, 0, 0, 0.08); /* Slightly more visible border */
+  --border-focus: rgba(138, 63, 252, 0.4);
+  --shadow-neon: 0 8px 30px rgba(0, 0, 0, 0.04); /* Soft shadow instead of glow */
+  --glass: none; /* No blur in light theme for clarity */
 }
 
 * {
@@ -94,12 +95,13 @@ h1, h2, h3, h4 {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .glass-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--border-focus);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-neon);
 }
 
@@ -125,11 +127,11 @@ h1, h2, h3, h4 {
 }
 
 .search-bar {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.75rem 1.25rem;
-  color: white;
+  color: var(--text-main);
   width: 320px;
   outline: none;
   transition: all 0.2s;
@@ -137,7 +139,7 @@ h1, h2, h3, h4 {
 
 .search-bar:focus {
   border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-card-hover);
 }
 
 /* Nav Items */
