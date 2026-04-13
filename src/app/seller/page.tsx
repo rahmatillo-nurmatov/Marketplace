@@ -32,7 +32,7 @@ export default function SellerDashboard() {
   }, [user]);
 
   return (
-    <ProtectedRoute allowedRoles={['seller', 'admin']}>
+    <ProtectedRoute allowedRoles={['client', 'seller', 'admin']}>
       <div className="container" style={{ padding: '4rem 0' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2rem' }}>Seller Dashboard</h1>
         

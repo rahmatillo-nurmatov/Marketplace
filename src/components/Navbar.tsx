@@ -21,7 +21,7 @@ export function Navbar() {
             <>
               <Link href="/cart" className="navbar-link">Cart</Link>
               {profile?.role === 'admin' && <Link href="/admin" className="navbar-link">Admin</Link>}
-              {profile?.role === 'seller' && <Link href="/seller" className="navbar-link">Dashboard</Link>}
+              {profile?.role === 'admin' && <Link href="/admin" className="navbar-link">Admin</Link>}
               <ProfileMenu />
             </>
           ) : (

@@ -121,6 +121,9 @@ export function ProfileMenu() {
             <Link href="/cart" onClick={() => setIsOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-main)', fontSize: '0.875rem' }}>
               <span>🛒</span> View Cart
             </Link>
+            <Link href="/seller" onClick={() => setIsOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-main)', fontSize: '0.875rem' }}>
+              <span>💰</span> Sell Products (Dashboard)
+            </Link>
             <Link href="/history" onClick={() => setIsOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-main)', fontSize: '0.875rem' }}>
               <span>📜</span> History & Expenses
             </Link>
