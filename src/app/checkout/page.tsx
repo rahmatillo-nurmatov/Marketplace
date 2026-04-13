@@ -5,6 +5,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { orderService } from '@/lib/services/orderService';
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
@@ -30,31 +31,22 @@ export default function CheckoutPage() {
     
     setLoading(true);
     try {
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer fake-token-${user?.uid}`
-        },
-        body: JSON.stringify({
-          clientId: user?.uid,
-          items: items.map(i => ({ productId: i.id, name: i.name, quantity: i.quantity, price: i.price })),
-          total,
-          status: 'pending',
-          shippingAddress: address
-        })
+      if (!user?.uid) throw new Error('User not authenticated');
+
+      await orderService.createOrder({
+        clientId: user.uid,
+        items: items.map(i => ({ productId: i.id, name: i.name, quantity: i.quantity, price: i.price })),
+        total,
+        status: 'pending',
+        shippingAddress: address
       });
 
-      if (response.ok) {
-        clearCart();
-        alert('Order placed successfully!');
-        router.push('/?success=1');
-      } else {
-        alert('Payment failed or server error.');
-      }
+      clearCart();
+      alert('Order placed successfully!');
+      router.push('/?success=1');
     } catch(err) {
       console.error(err);
-      alert('Network error');
+      alert('Error placing order. Please try again.');
     } finally {
       setLoading(false);
     }

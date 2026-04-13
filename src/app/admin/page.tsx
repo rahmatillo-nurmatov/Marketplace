@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { statsService } from '@/lib/services/statsService';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ users: 0, products: 0, orders: 0 });
 
   useEffect(() => {
-    // In production we would fetch stats from an API
-    setTimeout(() => {
-      setStats({ users: 120, products: 45, orders: 320 });
-    }, 1000);
+    statsService.getDashboardStats()
+      .then(data => setStats(data))
+      .catch(console.error);
   }, []);
 
   return (

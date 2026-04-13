@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Product } from '@/types';
 import { useParams, useRouter } from 'next/navigation';
+import { productService } from '@/lib/services/productService';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -14,17 +15,14 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In MVP, we can fetch all products and find the one. Or have a specific lookup endpoint.
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const found = data.find(p => p.id === params.id);
+    if (params.id && typeof params.id === 'string') {
+      productService.getProductById(params.id)
+        .then(found => {
           if (found) setProduct(found);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
   }, [params.id]);
 
   if (loading) return <div className="container" style={{ padding: '4rem 0', textAlign: 'center' }}>Loading product details...</div>;

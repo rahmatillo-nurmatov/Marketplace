@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { Product } from '@/types';
+import { productService } from '@/lib/services/productService';
 
 export default function SellerDashboard() {
   const { user } = useAuth();
@@ -11,16 +12,16 @@ export default function SellerDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For MVp, fetch all and filter client side, or hit a specific seller endpoint
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setProducts(data.filter(p => p.sellerId === user?.uid));
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    if (user?.uid) {
+      productService.getSellerProducts(user.uid)
+        .then(data => {
+          if (Array.isArray(data)) {
+            setProducts(data);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
   }, [user]);
 
   return (

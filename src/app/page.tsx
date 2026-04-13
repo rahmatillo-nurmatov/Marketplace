@@ -3,15 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { ProductCard } from '@/components/ProductCard';
 import { Product } from '@/types';
+import { productService } from '@/lib/services/productService';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For MVp, fetch from Netlify functions
-    fetch('/api/products')
-      .then(res => res.json())
+    productService.getProducts()
       .then(data => {
         if (Array.isArray(data)) {
           setProducts(data);
