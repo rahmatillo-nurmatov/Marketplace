@@ -19,15 +19,15 @@ export function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { label: 'Каталог', path: '/', icon: LayoutGrid },
-    { label: 'Корзина', path: '/cart', icon: ShoppingCart },
-    { label: 'История', path: '/history', icon: History },
-    { label: 'Профиль', path: '/profile', icon: User },
+    { label: t('sidebar_home'), path: '/', icon: LayoutGrid },
+    { label: t('sidebar_cart'), path: '/cart', icon: ShoppingCart },
+    { label: t('sidebar_history'), path: '/history', icon: History },
+    { label: t('sidebar_profile'), path: '/sidebar_profile' ? t('sidebar_profile') : 'Профиль', path: '/profile', icon: User },
   ];
 
   const adminItems = [
-    { label: 'Мои товары', path: '/seller', icon: Package },
-    { label: 'Заказы', path: '/seller/orders', icon: ClipboardList },
+    { label: t('sidebar_products'), path: '/seller', icon: Package },
+    { label: t('sidebar_orders'), path: '/seller/orders', icon: ClipboardList },
   ];
 
   return (
@@ -52,34 +52,56 @@ export function Sidebar() {
 
       <nav style={{ flex: 1 }}>
         <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '1rem', paddingLeft: '1.25rem', letterSpacing: '1px' }}>
-          Главное меню
+          {t('all_categories')}
         </p>
-        {menuItems.map((item) => (
-          <Link 
-            key={item.path} 
-            href={item.path} 
-            className={`nav-item ${pathname === item.path ? 'active' : ''}`}
-          >
-            <item.icon size={20} strokeWidth={2} />
-            {item.label}
-          </Link>
-        ))}
+        <Link 
+          href="/" 
+          className={`nav-item ${pathname === '/' ? 'active' : ''}`}
+        >
+          <LayoutGrid size={20} strokeWidth={2} />
+          {t('sidebar_home')}
+        </Link>
+        <Link 
+          href="/cart" 
+          className={`nav-item ${pathname === '/cart' ? 'active' : ''}`}
+        >
+          <ShoppingCart size={20} strokeWidth={2} />
+          {t('sidebar_cart')}
+        </Link>
+        <Link 
+          href="/history" 
+          className={`nav-item ${pathname === '/history' ? 'active' : ''}`}
+        >
+          <History size={20} strokeWidth={2} />
+          {t('sidebar_history')}
+        </Link>
+        <Link 
+          href="/profile" 
+          className={`nav-item ${pathname === '/profile' ? 'active' : ''}`}
+        >
+          <User size={20} strokeWidth={2} />
+          {t('sidebar_profile')}
+        </Link>
 
         <div style={{ margin: '2rem 1.25rem', height: '1px', background: 'var(--border)' }} />
 
         <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '1rem', paddingLeft: '1.25rem', letterSpacing: '1px' }}>
-          Панель продавца
+          {t('store_management')}
         </p>
-        {adminItems.map((item) => (
-          <Link 
-            key={item.path} 
-            href={item.path} 
-            className={`nav-item ${pathname === item.path ? 'active' : ''}`}
-          >
-            <item.icon size={20} strokeWidth={2} />
-            {item.label}
-          </Link>
-        ))}
+        <Link 
+          href="/seller" 
+          className={`nav-item ${pathname === '/seller' ? 'active' : ''}`}
+        >
+          <Package size={20} strokeWidth={2} />
+          {t('sidebar_products')}
+        </Link>
+        <Link 
+          href="/seller/orders" 
+          className={`nav-item ${pathname === '/seller/orders' ? 'active' : ''}`}
+        >
+          <ClipboardList size={20} strokeWidth={2} />
+          {t('sidebar_orders')}
+        </Link>
       </nav>
 
       <div style={{ paddingTop: '2rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>

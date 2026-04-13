@@ -5,11 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import Link from 'next/link';
-import { Search, Globe, Sun, Moon, LogIn, User } from 'lucide-react';
+import { Search, Sun, Moon, LogIn } from 'lucide-react';
 
 export function Navbar() {
   const { user } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -25,7 +25,7 @@ export function Navbar() {
           <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input 
             type="text" 
-            placeholder="Поиск товаров, категорий..." 
+            placeholder={t('search_placeholder')} 
             className="search-bar"
             style={{ paddingLeft: '3rem', width: '400px' }}
           />
@@ -86,12 +86,11 @@ export function Navbar() {
                 </div>
               </div>
             </Link>
-            <Link href="/checkout" className="btn-neon" style={{ padding: '0.7rem 1.5rem', borderRadius: '12px' }}>Оплатить</Link>
           </div>
         ) : (
           <Link href="/login" className="btn-neon" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <LogIn size={18} />
-            Войти
+            {t('login')}
           </Link>
         )}
       </div>

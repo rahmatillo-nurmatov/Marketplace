@@ -6,10 +6,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { orderService } from '@/lib/services/orderService';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { CreditCard, Truck, ShieldCheck } from 'lucide-react';
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const [address, setAddress] = useState('');
@@ -27,8 +30,6 @@ export default function CheckoutPage() {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    // No manual user check needed here as ProtectedRoute handles it
-    
     setLoading(true);
     try {
       if (!user?.uid) throw new Error('User not authenticated');
@@ -42,11 +43,11 @@ export default function CheckoutPage() {
       });
 
       clearCart();
-      alert('Order placed successfully!');
+      alert(t('checkout') + ' success!');
       router.push('/?success=1');
     } catch(err) {
       console.error(err);
-      alert('Error placing order. Please try again.');
+      alert('Error placing order.');
     } finally {
       setLoading(false);
     }
@@ -54,34 +55,65 @@ export default function CheckoutPage() {
 
   return (
     <ProtectedRoute>
-      <div className="container" style={{ padding: '4rem 0', maxWidth: '600px' }}>
-        <h1 className="auth-title" style={{ textAlign: 'left', marginBottom: '2rem' }}>Checkout</h1>
+      <div style={{ padding: '2rem 0', maxWidth: '800px', margin: '0 auto' }}>
+        <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '3rem' }}>Оплата заказа</h1>
         
-        <form onSubmit={handleCheckout} style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)' }}>
-          <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 600 }}>Shipping Information</h3>
-          
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Full Address</label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2.5rem' }}>
+          {/* Left: Shipping Form */}
+          <form onSubmit={handleCheckout} className="glass-card" style={{ padding: '2.5rem' }}>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 700 }}>
+               <Truck size={20} color="var(--primary)" />
+               Адрес доставки
+            </h3>
+            
             <textarea 
               required
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="123 Main St, New York, NY 10001"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', fontFamily: 'inherit', minHeight: '100px', resize: 'vertical' }}
+              placeholder="Введите полный адрес (Город, улица, дом, кв)..."
+              style={{ 
+                width: '100%', 
+                padding: '1.25rem', 
+                borderRadius: '16px', 
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid var(--border)', 
+                color: 'white',
+                fontFamily: 'inherit', 
+                minHeight: '150px', 
+                resize: 'none',
+                outline: 'none',
+                marginBottom: '2rem'
+              }}
             />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '2rem' }}>
+               <ShieldCheck size={18} color="#10B981" />
+               Ваши данные защищены сквозным шифрованием.
+            </div>
+
+            <button type="submit" disabled={loading} className="btn-neon" style={{ width: '100%', padding: '1.25rem', fontSize: '1.125rem' }}>
+               <CreditCard size={20} style={{ marginRight: '0.75rem' }} />
+               {loading ? 'Обработка платежа...' : 'Оплатить $' + total.toFixed(2)}
+            </button>
+          </form>
+
+          {/* Right: Order Summary */}
+          <div className="glass-card" style={{ padding: '2rem', height: 'fit-content' }}>
+             <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1.5rem' }}>Итого к оплате</h3>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {items.map(item => (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                     <span style={{ color: 'var(--text-muted)' }}>{item.quantity}x {item.name}</span>
+                     <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontSize: '1.25rem', fontWeight: 800 }}>
+                   <span>Всего</span>
+                   <span style={{ color: 'var(--primary)' }}>${total.toFixed(2)}</span>
+                </div>
+             </div>
           </div>
-
-          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '2rem 0' }} />
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <span style={{ fontSize: '1.25rem', fontWeight: 600 }}>Total to pay:</span>
-            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>${total.toFixed(2)}</span>
-          </div>
-
-          <button type="submit" disabled={loading} className="btn-primary">
-            {loading ? 'Processing Payment...' : 'Pay & Place Order'}
-          </button>
-        </form>
+        </div>
       </div>
     </ProtectedRoute>
   );
