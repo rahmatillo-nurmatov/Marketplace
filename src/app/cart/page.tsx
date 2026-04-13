@@ -65,10 +65,9 @@ export default function CartPage() {
                 </Link>
               </div>
             </div>
-            Proceed to Checkout
-          </Link>
-        </div>
+          </div>
+        )}
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
