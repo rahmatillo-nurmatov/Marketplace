@@ -1,25 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { ProductCard } from '@/components/ProductCard';
-import { Product } from '@/types';
 import { productService } from '@/lib/services/productService';
-
+import { Product } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function Home() {
+function HomeContent() {
   const { t } = useLanguage();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  
+  const selectedCategory = searchParams.get('category') || 'all';
 
   useEffect(() => {
     productService.getProducts()
       .then(data => {
         if (Array.isArray(data)) {
           setProducts(data);
-          setFilteredProducts(data);
         }
       })
       .catch(console.error)
@@ -33,6 +36,16 @@ export default function Home() {
       setFilteredProducts(products.filter(p => p.categoryId === selectedCategory));
     }
   }, [selectedCategory, products]);
+
+  const handleCategoryChange = (id: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (id === 'all') {
+      params.delete('category');
+    } else {
+      params.set('category', id);
+    }
+    router.push(`/?${params.toString()}`, { scroll: false });
+  };
 
   const categories = [
     { id: 'all', label: t('all_categories') },
@@ -62,7 +75,7 @@ export default function Home() {
         {categories.map(cat => (
           <button
             key={cat.id}
-            onClick={() => setSelectedCategory(cat.id)}
+            onClick={() => handleCategoryChange(cat.id)}
             className="btn-primary"
             style={{
               width: 'auto',
@@ -98,5 +111,13 @@ export default function Home() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="container" style={{ padding: '4rem', textAlign: 'center' }}>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
