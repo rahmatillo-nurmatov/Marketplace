@@ -5,7 +5,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { orderService } from '@/lib/services/orderService';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Clock, Calendar, Hash, DollarSign } from 'lucide-react';
+import { Clock, Calendar, Hash } from 'lucide-react';
 
 export default function HistoryPage() {
   const { user } = useAuth();
@@ -30,10 +30,10 @@ export default function HistoryPage() {
   return (
     <ProtectedRoute allowedRoles={['client', 'seller', 'admin']}>
       <div style={{ padding: '2rem 0' }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '3rem' }}>История расходов</h1>
+        <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '3rem' }}>{t('sidebar_history')}</h1>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '5rem' }}>Загрузка истории...</div>
+          <div style={{ textAlign: 'center', padding: '5rem' }}>{t('processing')}</div>
         ) : orders.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {orders.map(order => (
@@ -43,7 +43,7 @@ export default function HistoryPage() {
                     <Hash size={18} color="var(--primary)" />
                   </div>
                   <div>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>ID Заказа</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('order_id')}</p>
                     <p style={{ fontWeight: 700 }}>#{order.id.substring(0, 8)}</p>
                   </div>
                 </div>
@@ -53,7 +53,7 @@ export default function HistoryPage() {
                     <Calendar size={18} color="var(--text-muted)" />
                   </div>
                   <div>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Дата</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('date')}</p>
                     <p style={{ fontWeight: 600 }}>{new Date(order.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -63,14 +63,14 @@ export default function HistoryPage() {
                     <Clock size={18} color="#10B981" />
                   </div>
                   <div>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Статус</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('status')}</p>
                     <p style={{ fontWeight: 700, color: '#10B981', textTransform: 'capitalize' }}>{order.status}</p>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'flex-end' }}>
                    <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Сумма</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('total_price')}</p>
                     <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>${order.total.toFixed(2)}</p>
                   </div>
                 </div>
@@ -80,8 +80,8 @@ export default function HistoryPage() {
         ) : (
           <div className="glass-card" style={{ padding: '6rem', textAlign: 'center', borderStyle: 'dashed' }}>
              <Clock size={48} style={{ opacity: 0.2, marginBottom: '1.5rem', display: 'block', margin: '0 auto' }} />
-             <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>У вас пока нет истории заказов</p>
-             <button className="btn-neon" style={{ marginTop: '2rem' }} onClick={() => window.location.href = '/'}>Начать покупки</button>
+             <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>{t('no_orders')}</p>
+             <button className="btn-neon" style={{ marginTop: '2rem' }} onClick={() => window.location.href = '/'}>{t('sidebar_home')}</button>
           </div>
         )}
       </div>

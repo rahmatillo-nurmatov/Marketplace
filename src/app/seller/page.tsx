@@ -33,13 +33,13 @@ export default function SellerDashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
+    if (window.confirm(t('delete_confirm'))) {
       try {
         await productService.deleteProduct(id);
         fetchProducts();
       } catch (err) {
         console.error(err);
-        alert('Ошибка при удалении');
+        alert('Error deleting product');
       }
     }
   };
@@ -53,12 +53,12 @@ export default function SellerDashboard() {
       <div style={{ padding: '2rem 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
           <div>
-            <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>Мои товары</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Управление ассортиментом вашего магазина</p>
+            <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('sidebar_products')}</h1>
+            <p style={{ color: 'var(--text-muted)' }}>{t('store_management')}</p>
           </div>
           <button className="btn-neon" onClick={() => setIsModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Plus size={20} />
-            Добавить товар
+            {t('add_new_product')}
           </button>
         </div>
 
@@ -72,7 +72,7 @@ export default function SellerDashboard() {
         )}
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem' }}>Загрузка...</div>
+          <div style={{ textAlign: 'center', padding: '4rem' }}>{t('processing')}</div>
         ) : products.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem' }}>
             {products.map(product => (
@@ -82,11 +82,11 @@ export default function SellerDashboard() {
                     <img src={product.images?.[0]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>{product.name}</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>{t(product.name as any) || product.name}</div>
                     <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                       <span style={{ color: 'var(--primary)', fontWeight: 600 }}>${product.price.toFixed(2)}</span>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Запасы: {product.stock}</span>
-                      <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>{product.categoryId}</span>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('stock')}: {product.stock}</span>
+                      <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>{t(product.categoryId as any)}</span>
                     </div>
                   </div>
                 </div>
@@ -114,9 +114,9 @@ export default function SellerDashboard() {
           <div className="glass-card" style={{ padding: '5rem', textAlign: 'center', borderStyle: 'dashed' }}>
             <div style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
               <Package size={48} style={{ opacity: 0.3, marginBottom: '1rem', display: 'block', margin: '0 auto' }} />
-              У вас пока нет добавленных товаров
+              {t('no_products')}
             </div>
-            <button className="btn-neon" onClick={() => setIsModalOpen(true)}>Добавить первый товар</button>
+            <button className="btn-neon" onClick={() => setIsModalOpen(true)}>{t('add_new_product')}</button>
           </div>
         )}
       </div>

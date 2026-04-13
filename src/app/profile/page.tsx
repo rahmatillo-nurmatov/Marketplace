@@ -85,27 +85,27 @@ export default function ProfilePage() {
              <div className="glass-card" style={{ padding: '2rem' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                    <Settings size={20} color="var(--primary)" />
-                   Настройки аккаунта
+                   {t('account_settings')}
                 </h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                          <User size={18} color="var(--text-muted)" />
-                         <span>Сменить никнейм</span>
+                         <span>{t('change_nick')}</span>
                       </div>
                       <button 
                         onClick={() => setIsEditingNick(true)}
                         style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
                       >
-                        Изменить
+                         {t('details')}
                       </button>
                    </div>
                    
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                          <Mail size={18} color="var(--text-muted)" />
-                         <span>Электронная почта</span>
+                         <span>{t('email')}</span>
                       </div>
                       <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{user.email}</span>
                    </div>
@@ -113,13 +113,13 @@ export default function ProfilePage() {
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                          <Shield size={18} color="var(--text-muted)" />
-                         <span>Безопасность</span>
+                         <span>{t('security')}</span>
                       </div>
                       <button 
                         onClick={() => setIsSettingSecurity(!isSettingSecurity)}
                         style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
                       >
-                         {isSettingSecurity ? 'Включено' : 'Настроить'}
+                         {isSettingSecurity ? t('enabled') : t('configure')}
                       </button>
                    </div>
                 </div>
@@ -128,7 +128,7 @@ export default function ProfilePage() {
              <div className="glass-card" style={{ padding: '2rem' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                    <CreditCard size={20} color="var(--accent)" />
-                   Способы оплаты
+                   {t('payment_methods')}
                 </h3>
                 {isAddingCard ? (
                   <div style={{ padding: '1rem', border: '1px solid var(--accent)', borderRadius: '12px', background: 'rgba(0, 224, 255, 0.05)' }}>
@@ -140,8 +140,8 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div style={{ padding: '2rem', border: '2px dashed var(--border)', borderRadius: '16px', textAlign: 'center' }}>
-                     <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Нет привязанных карт</p>
-                     <button onClick={() => setIsAddingCard(true)} className="btn-neon" style={{ background: 'var(--accent)', boxShadow: '0 0 15px rgba(0, 224, 255, 0.3)' }}>+ Добавить карту</button>
+                     <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>{t('no_cards')}</p>
+                     <button onClick={() => setIsAddingCard(true)} className="btn-neon" style={{ background: 'var(--accent)', boxShadow: '0 0 15px rgba(0, 224, 255, 0.3)' }}>+ {t('add_card')}</button>
                   </div>
                 )}
              </div>
