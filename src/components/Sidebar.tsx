@@ -22,7 +22,7 @@ export function Sidebar() {
     { label: t('sidebar_home'), path: '/', icon: LayoutGrid },
     { label: t('sidebar_cart'), path: '/cart', icon: ShoppingCart },
     { label: t('sidebar_history'), path: '/history', icon: History },
-    { label: t('sidebar_profile'), path: '/sidebar_profile' ? t('sidebar_profile') : 'Профиль', path: '/profile', icon: User },
+    { label: t('sidebar_profile'), path: '/profile', icon: User },
   ];
 
   const adminItems = [
