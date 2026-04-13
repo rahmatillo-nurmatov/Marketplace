@@ -5,14 +5,17 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { Product } from '@/types';
 import { productService } from '@/lib/services/productService';
+import { AddProductModal } from '@/components/AddProductModal';
 
 export default function SellerDashboard() {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchProducts = () => {
     if (user?.uid) {
+      setLoading(true);
       productService.getSellerProducts(user.uid)
         .then(data => {
           if (Array.isArray(data)) {
@@ -22,6 +25,10 @@ export default function SellerDashboard() {
         .catch(console.error)
         .finally(() => setLoading(false));
     }
+  };
+
+  useEffect(() => {
+    fetchProducts();
   }, [user]);
 
   return (
@@ -29,6 +36,8 @@ export default function SellerDashboard() {
       <div className="container" style={{ padding: '4rem 0' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2rem' }}>Seller Dashboard</h1>
         
+        {isModalOpen && <AddProductModal onClose={() => setIsModalOpen(false)} onSuccess={fetchProducts} />}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 3fr)', gap: '2rem' }}>
           
           <div style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', height: 'fit-content' }}>
@@ -45,7 +54,7 @@ export default function SellerDashboard() {
                 </button>
               </li>
               <li>
-                <button className="btn-primary">
+                <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
                   + Add New Product
                 </button>
               </li>
