@@ -5,72 +5,298 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { orderService } from '@/lib/services/orderService';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ShoppingBag, Clock, CheckCircle, Truck } from 'lucide-react';
+import { Order } from '@/types';
+import { 
+  ShoppingBag, Clock, CheckCircle, Truck, 
+  MapPin, Calendar, Package, ChevronRight, 
+  User, CreditCard, ArrowLeft, RefreshCw
+} from 'lucide-react';
 
 export default function SellerOrders() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const data = await orderService.getAllOrders();
+      setOrders(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (user?.uid) {
-      setLoading(true);
-      setTimeout(() => {
-         setOrders([]);
-         setLoading(false);
-      }, 800);
+      fetchOrders();
     }
   }, [user]);
 
-  const getStatusIcon = (status: string) => {
-    switch(status) {
-      case 'pending': return <Clock size={16} />;
-      case 'shipped': return <Truck size={16} />;
-      case 'completed': return <CheckCircle size={16} />;
-      default: return <ShoppingBag size={16} />;
+  const handleUpdateStatus = async (orderId: string, newStatus: Order['status']) => {
+    try {
+      await orderService.updateOrderStatus(orderId, newStatus);
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
+      fetchOrders();
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка при обновлении статуса');
     }
   };
+
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'pending': return '#F59E0B'; // Amber
+      case 'processing': return '#3B82F6'; // Blue
+      case 'shipped': return '#8B5CF6'; // Violet
+      case 'delivered': return '#10B981'; // Green
+      case 'cancelled': return '#EF4444'; // Red
+      default: return '#6B7280';
+    }
+  };
+
+  // Strict Styles (No Gradients)
+  const strictCardStyle = {
+    background: '#12121e',
+    border: '1px solid #2a2a3c',
+    borderRadius: '8px',
+    padding: '1.5rem',
+    transition: 'all 0.2s'
+  };
+
+  const badgeStyle = (status: string) => ({
+    padding: '4px 12px',
+    borderRadius: '4px',
+    fontSize: '0.75rem',
+    fontWeight: 700,
+    textTransform: 'uppercase' as const,
+    background: `${getStatusColor(status)}20`,
+    color: getStatusColor(status),
+    border: `1px solid ${getStatusColor(status)}40`,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem'
+  });
+
+  if (selectedOrder) {
+    return (
+      <ProtectedRoute allowedRoles={['seller', 'admin']}>
+        <div style={{ padding: '2rem 0' }}>
+          <button 
+            onClick={() => setSelectedOrder(null)}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', fontWeight: 600 }}
+          >
+            <ArrowLeft size={18} /> Назад к списку
+          </button>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+            {/* Order Details Column */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+               <div style={strictCardStyle}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+                    <div>
+                      <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>Детали заказа #{selectedOrder.id.substring(0,8)}</h2>
+                      <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={14}/> {new Date(selectedOrder.createdAt).toLocaleString()}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Package size={14}/> {selectedOrder.items.length} товара</span>
+                      </div>
+                    </div>
+                    <div style={badgeStyle(selectedOrder.status)}>
+                       {selectedOrder.status}
+                    </div>
+                  </div>
+
+                  <div style={{ borderTop: '1px solid #2a2a3c', paddingTop: '1.5rem' }}>
+                     <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', letterSpacing: '1px' }}>Состав заказа</h4>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {selectedOrder.items.map((item, idx) => (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#1a1a2b', borderRadius: '6px' }}>
+                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div style={{ width: '48px', height: '48px', background: '#252538', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                   <Package size={20} color="#4b4b63" />
+                                </div>
+                                <div>
+                                   <div style={{ fontWeight: 700 }}>{item.name}</div>
+                                   <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>${item.price.toFixed(2)} x {item.quantity}</div>
+                                </div>
+                             </div>
+                             <div style={{ fontWeight: 800 }}>${(item.price * item.quantity).toFixed(2)}</div>
+                          </div>
+                        ))}
+                     </div>
+                  </div>
+
+                  <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '2px solid #2a2a3c', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <span style={{ fontSize: '1.125rem', fontWeight: 700 }}>Итого к оплате</span>
+                     <span style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--primary)' }}>${selectedOrder.total.toFixed(2)}</span>
+                  </div>
+               </div>
+
+               {/* Timeline */}
+               <div style={strictCardStyle}>
+                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '2rem', letterSpacing: '1px' }}>История изменений</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', position: 'relative' }}>
+                     {[
+                       { status: 'pending', label: 'Заказ оформлен', active: true },
+                       { status: 'processing', label: 'В обработке', active: ['processing', 'shipped', 'delivered'].includes(selectedOrder.status) },
+                       { status: 'shipped', label: 'Отправлен', active: ['shipped', 'delivered'].includes(selectedOrder.status) },
+                       { status: 'delivered', label: 'Доставлен', active: selectedOrder.status === 'delivered' }
+                     ].map((step, idx, arr) => (
+                       <div key={step.status} style={{ display: 'flex', gap: '1.5rem', position: 'relative' }}>
+                          <div style={{ 
+                            width: '24px', 
+                            height: '24px', 
+                            borderRadius: '50%', 
+                            background: step.active ? getStatusColor(step.status) : '#2a2a3c',
+                            zIndex: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                             {step.active && <CheckCircle size={14} color="white" />}
+                          </div>
+                          {idx < arr.length - 1 && (
+                            <div style={{ position: 'absolute', left: '11px', top: '24px', width: '2px', height: 'calc(100% + 4px)', background: step.active && arr[idx+1].active ? getStatusColor(step.status) : '#2a2a3c', zIndex: 1 }} />
+                          )}
+                          <div>
+                             <div style={{ fontWeight: 700, color: step.active ? 'white' : 'var(--text-muted)' }}>{step.label}</div>
+                             {step.active && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{step.status === selectedOrder.status ? 'Текущий статус' : 'Завершено'}</div>}
+                          </div>
+                       </div>
+                     ))}
+                  </div>
+               </div>
+            </div>
+
+            {/* Actions Sidebar */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+               <div style={strictCardStyle}>
+                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '1px' }}>Доставка</h4>
+                  <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                     <MapPin size={20} color="var(--primary)" />
+                     <div style={{ fontSize: '0.875rem', lineHeight: 1.5 }}>{selectedOrder.shippingAddress}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)' }}>
+                     <User size={18} />
+                     <span style={{ fontSize: '0.875rem' }}>ID Клиента: {selectedOrder.clientId.substring(0,12)}...</span>
+                  </div>
+               </div>
+
+               <div style={strictCardStyle}>
+                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '1px' }}>Управление статусом</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
+                     {['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(status => (
+                        <button
+                          key={status}
+                          onClick={() => handleUpdateStatus(selectedOrder.id, status as any)}
+                          style={{
+                            padding: '0.75rem',
+                            borderRadius: '6px',
+                            border: '1px solid #2a2a3c',
+                            background: selectedOrder.status === status ? getStatusColor(status) : 'transparent',
+                            color: selectedOrder.status === status ? 'white' : 'var(--text-muted)',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textTransform: 'uppercase',
+                            fontSize: '0.75rem',
+                            textAlign: 'left',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                           {status}
+                           {selectedOrder.status === status && <CheckCircle size={14} />}
+                        </button>
+                     ))}
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute allowedRoles={['seller', 'admin']}>
       <div style={{ padding: '2rem 0' }}>
-        <div style={{ marginBottom: '3rem' }}>
-          <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('sidebar_orders')}</h1>
-          <p style={{ color: 'var(--text-muted)' }}>{t('order_management_desc')}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
+          <div>
+            <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('sidebar_orders')}</h1>
+            <p style={{ color: 'var(--text-muted)' }}>Центр управления всеми заказами пользователей</p>
+          </div>
+          <button 
+            onClick={fetchOrders}
+            className="glass-card" 
+            style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600 }}
+          >
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} /> Обновить БД
+          </button>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem' }}>{t('processing')}</div>
+          <div style={{ textAlign: 'center', padding: '6rem' }}>
+             <div style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Синхронизация с базой данных...</div>
+          </div>
         ) : orders.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem' }}>
-            {orders.map(order => (
-              <div key={order.id} className="glass-card" style={{ padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.5rem' }}>{t('order')} #{order.id.substring(0,8)}</div>
-                  <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                    <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                    <span>•</span>
-                    <span>{order.items.length} items</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                   <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>${order.total.toFixed(2)}</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                         {getStatusIcon(order.status)}
-                         <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>{order.status}</span>
-                      </div>
-                   </div>
-                   <button className="btn-neon" style={{ padding: '0.6rem 1.25rem', fontSize: '0.875rem' }}>{t('details')}</button>
-                </div>
-              </div>
-            ))}
+          <div className="glass-card" style={{ padding: 0, overflow: 'hidden', border: '1px solid #2a2a3c' }}>
+             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                   <tr style={{ background: '#12121e', borderBottom: '1px solid #2a2a3c' }}>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Заказ</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Дата</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Статус</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Товары</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Сумма</th>
+                      <th style={{ padding: '1.25rem 2rem' }}></th>
+                   </tr>
+                </thead>
+                <tbody>
+                   {orders.map(order => (
+                     <tr key={order.id} style={{ borderBottom: '1px solid #2a2a3c', background: 'rgba(255,255,255,0.01)' }}>
+                        <td style={{ padding: '1.25rem 2rem' }}>
+                           <div style={{ fontWeight: 700 }}>#{order.id.substring(0,8)}</div>
+                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {order.clientId.substring(0,6)}...</div>
+                        </td>
+                        <td style={{ padding: '1.25rem 2rem' }}>
+                           <div style={{ fontSize: '0.875rem' }}>{new Date(order.createdAt).toLocaleDateString()}</div>
+                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        </td>
+                        <td style={{ padding: '1.25rem 2rem' }}>
+                           <span style={badgeStyle(order.status)}>{order.status}</span>
+                        </td>
+                        <td style={{ padding: '1.25rem 2rem' }}>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <Package size={14} color="var(--text-muted)" />
+                              <span style={{ fontSize: '0.875rem' }}>{order.items.length} поз.</span>
+                           </div>
+                        </td>
+                        <td style={{ padding: '1.25rem 2rem', fontWeight: 800 }}>${order.total.toFixed(2)}</td>
+                        <td style={{ padding: '1.25rem 2rem' }}>
+                           <button 
+                             onClick={() => setSelectedOrder(order)}
+                             className="glass-card" 
+                             style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                           >
+                             Детали <ChevronRight size={14} />
+                           </button>
+                        </td>
+                     </tr>
+                   ))}
+                </tbody>
+             </table>
           </div>
         ) : (
-          <div className="glass-card" style={{ padding: '6rem', textAlign: 'center', borderStyle: 'dashed' }}>
-            <ShoppingBag size={48} style={{ opacity: 0.2, marginBottom: '1.5rem', display: 'block', margin: '0 auto' }} />
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem' }}>{t('no_orders')}</p>
+          <div className="glass-card" style={{ padding: '8rem', textAlign: 'center', borderStyle: 'dashed' }}>
+            <ShoppingBag size={48} style={{ opacity: 0.2, marginBottom: '2rem', display: 'block', margin: '0 auto' }} />
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>Реальных заказов в базе данных пока нет</p>
           </div>
         )}
       </div>

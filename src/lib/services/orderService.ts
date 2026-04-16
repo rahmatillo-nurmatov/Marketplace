@@ -44,5 +44,20 @@ export const orderService = {
       return { id: docSnap.id, ...docSnap.data() } as Order;
     }
     return null;
+  },
+
+  async getAllOrders(): Promise<Order[]> {
+    const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Order));
+  },
+
+  async updateOrderStatus(id: string, status: Order['status']): Promise<void> {
+    const { updateDoc } = await import('firebase/firestore');
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, { status, updatedAt: Date.now() });
   }
 };
