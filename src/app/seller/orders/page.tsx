@@ -33,7 +33,7 @@ export default function SellerOrders() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['client', 'seller', 'admin']}>
+    <ProtectedRoute allowedRoles={['seller', 'admin']}>
       <div style={{ padding: '2rem 0' }}>
         <div style={{ marginBottom: '3rem' }}>
           <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('sidebar_orders')}</h1>

@@ -47,3 +47,13 @@ export interface Review {
   comment: string;
   createdAt: number;
 }
+
+export type UserRole = 'client' | 'seller' | 'admin';
+
+export interface AppUser {
+  uid: string;
+  email: string | null;
+  role: UserRole;
+  displayName?: string;
+  photoURL?: string;
+}

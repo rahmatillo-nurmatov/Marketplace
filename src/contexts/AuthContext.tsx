@@ -23,6 +23,7 @@ interface AuthContextType {
   signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateRole: (role: UserRole) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -99,8 +100,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signOut(auth);
   };
 
+  const updateRole = async (newRole: UserRole) => {
+    if (!user) return;
+    const userDocRef = doc(db, 'users', user.uid);
+    await setDoc(userDocRef, { role: newRole }, { merge: true });
+    setProfile(prev => prev ? { ...prev, role: newRole } : null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, signUpWithEmail, signInWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, signUpWithEmail, signInWithEmail, logout, updateRole }}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,108 +4,127 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
-  LayoutGrid, 
-  ShoppingCart, 
-  History, 
-  User, 
-  Package, 
-  ClipboardList, 
-  Store
+  LayoutGrid, ShoppingCart, History, User, 
+  Package, ShoppingBag, ShieldCheck, LogOut 
 } from 'lucide-react';
 
 export function Sidebar() {
-  const { t } = useLanguage();
   const pathname = usePathname();
+  const { t } = useLanguage();
+  const { profile, logout } = useAuth();
+  
+  const userRole = profile?.role || 'client';
 
-  const menuItems = [
+  const commonItems = [
     { label: t('sidebar_home'), path: '/', icon: LayoutGrid },
     { label: t('sidebar_cart'), path: '/cart', icon: ShoppingCart },
     { label: t('sidebar_history'), path: '/history', icon: History },
     { label: t('sidebar_profile'), path: '/profile', icon: User },
   ];
 
-  const adminItems = [
+  const sellerItems = [
     { label: t('sidebar_products'), path: '/seller', icon: Package },
-    { label: t('sidebar_orders'), path: '/seller/orders', icon: ClipboardList },
+    { label: t('sidebar_orders'), path: '/seller/orders', icon: ShoppingBag },
+  ];
+
+  const adminItems = [
+    { label: 'Панель админа', path: '/admin', icon: ShieldCheck },
   ];
 
   return (
-    <aside className="sidebar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '3rem' }}>
-        <div style={{ 
-          width: '40px', 
-          height: '40px', 
-          background: 'linear-gradient(135deg, var(--primary), var(--accent))', 
-          borderRadius: '12px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          boxShadow: '0 0 15px var(--primary-glow)' 
-        }}>
-          <Store size={24} color="white" />
+    <aside style={{
+      width: '280px',
+      height: '100vh',
+      position: 'fixed',
+      left: 0,
+      top: 0,
+      background: 'var(--bg-side)',
+      borderRight: '1px solid var(--border)',
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '2rem 1.5rem',
+      zIndex: 100
+    }}>
+      <div style={{ marginBottom: '3rem', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 0.5rem' }}>
+        <div style={{ width: '40px', height: '40px', background: 'var(--primary)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px var(--primary-glow)' }}>
+          <ShoppingBag color="white" size={24} />
         </div>
-        <span style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-1px', background: 'linear-gradient(to right, #fff, #8b8a91)', WebkitBackgroundClip: 'text', color: 'transparent' }}>
-          NurShop
-        </span>
+        <span style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-1px' }}>NurShop</span>
       </div>
 
       <nav style={{ flex: 1 }}>
-        <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '1rem', paddingLeft: '1.25rem', letterSpacing: '1px' }}>
-          {t('all_categories')}
+        <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+          Главное меню
         </p>
-        <Link 
-          href="/" 
-          className={`nav-item ${pathname === '/' ? 'active' : ''}`}
-        >
-          <LayoutGrid size={20} strokeWidth={2} />
-          {t('sidebar_home')}
-        </Link>
-        <Link 
-          href="/cart" 
-          className={`nav-item ${pathname === '/cart' ? 'active' : ''}`}
-        >
-          <ShoppingCart size={20} strokeWidth={2} />
-          {t('sidebar_cart')}
-        </Link>
-        <Link 
-          href="/history" 
-          className={`nav-item ${pathname === '/history' ? 'active' : ''}`}
-        >
-          <History size={20} strokeWidth={2} />
-          {t('sidebar_history')}
-        </Link>
-        <Link 
-          href="/profile" 
-          className={`nav-item ${pathname === '/profile' ? 'active' : ''}`}
-        >
-          <User size={20} strokeWidth={2} />
-          {t('sidebar_profile')}
-        </Link>
+        {commonItems.map((item) => (
+          <Link 
+            key={item.path} 
+            href={item.path} 
+            className={`nav-item ${pathname === item.path ? 'active' : ''}`}
+          >
+            <item.icon size={20} />
+            {item.label}
+          </Link>
+        ))}
 
-        <div style={{ margin: '2rem 1.25rem', height: '1px', background: 'var(--border)' }} />
+        {(userRole === 'seller' || userRole === 'admin') && (
+          <>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2.5rem', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+              Инструменты продаж
+            </p>
+            {sellerItems.map((item) => (
+              <Link 
+                key={item.path} 
+                href={item.path} 
+                className={`nav-item ${pathname === item.path ? 'active' : ''}`}
+              >
+                <item.icon size={20} />
+                {item.label}
+              </Link>
+            ))}
+          </>
+        )}
 
-        <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '1rem', paddingLeft: '1.25rem', letterSpacing: '1px' }}>
-          {t('store_management')}
-        </p>
-        <Link 
-          href="/seller" 
-          className={`nav-item ${pathname === '/seller' ? 'active' : ''}`}
-        >
-          <Package size={20} strokeWidth={2} />
-          {t('sidebar_products')}
-        </Link>
-        <Link 
-          href="/seller/orders" 
-          className={`nav-item ${pathname === '/seller/orders' ? 'active' : ''}`}
-        >
-          <ClipboardList size={20} strokeWidth={2} />
-          {t('sidebar_orders')}
-        </Link>
+        {userRole === 'admin' && (
+          <>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2.5rem', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+              Администрирование
+            </p>
+            {adminItems.map((item) => (
+              <Link 
+                key={item.path} 
+                href={item.path} 
+                className={`nav-item ${pathname === item.path ? 'active' : ''}`}
+              >
+                <item.icon size={20} />
+                {item.label}
+              </Link>
+            ))}
+          </>
+        )}
       </nav>
 
-      <div style={{ paddingTop: '2rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>© 2024 NurShop</p>
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 1rem 1.5rem' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem' }}>
+            {profile?.email?.[0].toUpperCase() || 'U'}
+          </div>
+          <div style={{ overflow: 'hidden' }}>
+            <p style={{ fontSize: '0.875rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile?.displayName || 'User'}</p>
+            <p style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase' }}>{userRole}</p>
+          </div>
+        </div>
+        <button 
+          onClick={() => logout()}
+          style={{ width: '100%', background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: 'none', padding: '0.8rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+        >
+          <LogOut size={18} />
+          Выйти
+        </button>
       </div>
     </aside>
   );

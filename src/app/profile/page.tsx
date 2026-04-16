@@ -4,14 +4,18 @@ import React, { useState } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { User, Mail, Shield, CreditCard, Settings, Camera, Check, X } from 'lucide-react';
+import { UserRole } from '@/contexts/AuthContext';
+import { 
+  User, Mail, Shield, CreditCard, Settings, 
+  Camera, Check, X, ShieldAlert, Briefcase, ShoppingBag 
+} from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, profile, updateRole } = useAuth();
   const { t } = useLanguage();
   
   const [isEditingNick, setIsEditingNick] = useState(false);
-  const [nick, setNick] = useState(user?.email?.split('@')[0] || 'User');
+  const [nick, setNick] = useState(profile?.displayName || user?.email?.split('@')[0] || 'User');
   const [tempNick, setTempNick] = useState(nick);
   
   const [isAddingCard, setIsAddingCard] = useState(false);
@@ -25,62 +29,118 @@ export default function ProfilePage() {
     setIsEditingNick(false);
   };
 
+  const roles: { id: UserRole; icon: any; color: string; label: string }[] = [
+    { id: 'client', icon: ShoppingBag, color: '#3B82F6', label: 'Покупатель' },
+    { id: 'seller', icon: Briefcase, color: '#8a3ffc', label: 'Продавец' },
+    { id: 'admin', icon: ShieldAlert, color: '#EF4444', label: 'Администратор' }
+  ];
+
   return (
     <ProtectedRoute allowedRoles={['client', 'seller', 'admin']}>
       <div style={{ padding: '2rem 0' }}>
         <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '3rem' }}>{t('sidebar_profile')}</h1>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2.5rem' }}>
-          {/* Profile Card */}
-          <div className="glass-card" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
-            <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 2rem' }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--accent))', padding: '4px' }}>
-                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', fontWeight: 800, overflow: 'hidden' }}>
-                  {isChangingPhoto ? (
-                     <div style={{ fontSize: '0.8rem', padding: '1rem' }}>Uploading...</div>
-                  ) : (
-                    user.email?.[0].toUpperCase()
-                  )}
+          {/* Left Side: Profile Info */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
+              <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 2rem' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--accent))', padding: '4px' }}>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', fontWeight: 800, overflow: 'hidden' }}>
+                    {isChangingPhoto ? (
+                       <div style={{ fontSize: '0.8rem', padding: '1rem' }}>Uploading...</div>
+                    ) : (
+                      user.email?.[0].toUpperCase()
+                    )}
+                  </div>
                 </div>
+                <button 
+                  onClick={() => setIsChangingPhoto(true)}
+                  className="glass-card" 
+                  style={{ position: 'absolute', bottom: '0', right: '0', padding: '0.5rem', borderRadius: '50%', background: 'var(--bg-side)', border: '1px solid var(--primary)', cursor: 'pointer' }}
+                >
+                   <Camera size={16} color="white" />
+                </button>
               </div>
-              <button 
-                onClick={() => setIsChangingPhoto(true)}
-                className="glass-card" 
-                style={{ position: 'absolute', bottom: '0', right: '0', padding: '0.5rem', borderRadius: '50%', background: 'var(--bg-side)', border: '1px solid var(--primary)', cursor: 'pointer' }}
-              >
-                 <Camera size={16} color="white" />
-              </button>
+              
+              {isEditingNick ? (
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '1rem' }}>
+                  <input 
+                    value={tempNick} 
+                    onChange={(e) => setTempNick(e.target.value)}
+                    style={{ background: 'var(--bg-side)', border: '1px solid var(--primary)', color: 'white', padding: '0.25rem 0.5rem', borderRadius: '4px', textAlign: 'center', outline: 'none' }}
+                  />
+                  <button onClick={handleSaveNick} style={{ background: 'green', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', padding: '0.25rem' }}><Check size={16}/></button>
+                  <button onClick={() => setIsEditingNick(false)} style={{ background: 'red', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', padding: '0.25rem' }}><X size={16}/></button>
+                </div>
+              ) : (
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{nick}</h2>
+              )}
+              
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '2rem' }}>{user.email}</p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
+                 <div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('status')}</p>
+                    <p style={{ fontWeight: 700, color: 'var(--primary)', textTransform: 'capitalize' }}>{profile?.role || 'client'}</p>
+                 </div>
+                 <div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Orders</p>
+                    <p style={{ fontWeight: 700 }}>12</p>
+                 </div>
+              </div>
             </div>
-            
-            {isEditingNick ? (
-              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '1rem' }}>
-                <input 
-                  value={tempNick} 
-                  onChange={(e) => setTempNick(e.target.value)}
-                  style={{ background: 'var(--bg-side)', border: '1px solid var(--primary)', color: 'white', padding: '0.25rem 0.5rem', borderRadius: '4px', textAlign: 'center', outline: 'none' }}
-                />
-                <button onClick={handleSaveNick} style={{ background: 'green', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', padding: '0.25rem' }}><Check size={16}/></button>
-                <button onClick={() => setIsEditingNick(false)} style={{ background: 'red', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', padding: '0.25rem' }}><X size={16}/></button>
+
+            {/* Role Switcher */}
+            <div className="glass-card" style={{ padding: '2rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                 <ShieldAlert size={20} color="var(--primary)" />
+                 Выбор активной роли
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+                Измените вашу роль для доступа к различным разделам магазина.
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {roles.map((role) => {
+                  const Icon = role.icon;
+                  const isActive = profile?.role === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      onClick={() => updateRole(role.id)}
+                      className="glass-card"
+                      style={{
+                        padding: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        cursor: 'pointer',
+                        border: isActive ? `1px solid ${role.color}` : '1px solid var(--border)',
+                        background: isActive ? `${role.color}15` : 'transparent',
+                        textAlign: 'left',
+                        width: '100%',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <div style={{ padding: '0.5rem', borderRadius: '8px', background: `${role.color}20` }}>
+                        <Icon size={20} color={role.color} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: isActive ? role.color : 'white' }}>{role.label}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {isActive ? 'Текущая роль' : `Переключиться на ${role.label.toLowerCase()}`}
+                        </div>
+                      </div>
+                      {isActive && <Check size={20} color={role.color} />}
+                    </button>
+                  );
+                })}
               </div>
-            ) : (
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{nick}</h2>
-            )}
-            
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '2rem' }}>{user.email}</p>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
-               <div>
-                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('status')}</p>
-                  <p style={{ fontWeight: 700, color: 'var(--primary)' }}>Premium</p>
-               </div>
-               <div>
-                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Orders</p>
-                  <p style={{ fontWeight: 700 }}>12</p>
-               </div>
             </div>
           </div>
 
-          {/* Settings / Actions */}
+          {/* Right Side: Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
              <div className="glass-card" style={{ padding: '2rem' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
