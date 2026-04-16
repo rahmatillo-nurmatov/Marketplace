@@ -34,6 +34,7 @@ const AuthContext = createContext<AuthContextType>({
   signUpWithEmail: async () => {},
   signInWithEmail: async () => {},
   logout: async () => {},
+  updateRole: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
