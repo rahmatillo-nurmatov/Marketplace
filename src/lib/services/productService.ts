@@ -43,9 +43,10 @@ export const productService = {
     } as Product));
   },
 
-  async addProduct(productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async addProduct(productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'status'>): Promise<string> {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
       ...productData,
+      status: 'pending',
       createdAt: Date.now(),
       updatedAt: Date.now()
     });
@@ -84,5 +85,26 @@ export const productService = {
         updatedAt: Date.now()
       });
     });
+  },
+
+  async updateProductStatus(id: string, status: Product['status']): Promise<void> {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, { status, updatedAt: Date.now() });
+  },
+
+  async purchasePromotion(id: string, adStartDate: number, adEndDate: number): Promise<void> {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, { 
+      isPromoted: true, 
+      adStartDate, 
+      adEndDate,
+      updatedAt: Date.now() 
+    });
+  },
+
+  async getPendingProducts(): Promise<Product[]> {
+    const q = query(collection(db, COLLECTION_NAME), where('status', '==', 'pending'));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
   }
 };

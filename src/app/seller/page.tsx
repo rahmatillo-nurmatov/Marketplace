@@ -1,39 +1,42 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
-import { Product } from '@/types';
 import { productService } from '@/lib/services/productService';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Product } from '@/types';
+import { 
+  Plus, Search, Filter, Package, 
+  DollarSign, TrendingUp, Edit3, Trash2,
+  Calendar, Zap, AlertCircle, CheckCircle, X
+} from 'lucide-react';
 import { AddProductModal } from '@/components/AddProductModal';
 import { EditProductModal } from '@/components/EditProductModal';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, Edit3, Trash2, Package, Search, Filter, ArrowUpRight, DollarSign, Layers } from 'lucide-react';
 
 export default function SellerDashboard() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  
-  // Search and Filter States
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
 
-  const fetchProducts = () => {
-    if (user?.uid) {
-      setLoading(true);
-      productService.getSellerProducts(user.uid)
-        .then(data => {
-          if (Array.isArray(data)) {
-            setProducts(data);
-          }
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+  // Promotion State
+  const [promoteProduct, setPromoteProduct] = useState<Product | null>(null);
+  const [adDates, setAdDates] = useState({ start: '', end: '' });
+  const [promoSubmitting, setPromoSubmitting] = useState(false);
+
+  const fetchProducts = async () => {
+    if (!user?.uid) return;
+    setLoading(true);
+    try {
+      const data = await productService.getSellerProducts(user.uid);
+      setProducts(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,202 +44,227 @@ export default function SellerDashboard() {
     fetchProducts();
   }, [user]);
 
-  const filteredProducts = useMemo(() => {
-    return products
-      .filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             p.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === 'all' || p.categoryId === selectedCategory;
-        return matchesSearch && matchesCategory;
-      })
-      .sort((a, b) => {
-        if (sortBy === 'price-high') return b.price - a.price;
-        if (sortBy === 'price-low') return a.price - b.price;
-        if (sortBy === 'stock') return a.stock - b.stock;
-        return b.createdAt - a.createdAt; // newest
-      });
-  }, [products, searchQuery, selectedCategory, sortBy]);
-
   const handleDelete = async (id: string) => {
-    if (window.confirm(t('delete_confirm'))) {
-      try {
-        await productService.deleteProduct(id);
-        fetchProducts();
-      } catch (err) {
-        console.error(err);
-        alert('Ошибка при удалении');
-      }
+    if (!confirm(t('delete_confirm'))) return;
+    try {
+      await productService.deleteProduct(id);
+      setProducts(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const statCardStyle = {
-    padding: '1.5rem',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem',
-    flex: 1
+  const handleApplyPromo = async () => {
+    if (!promoteProduct || !adDates.start || !adDates.end) return;
+    setPromoSubmitting(true);
+    try {
+      const start = new Date(adDates.start).getTime();
+      const end = new Date(adDates.end).getTime();
+      await productService.purchasePromotion(promoteProduct.id, start, end);
+      alert('Заявка на продвижение отправлена и ожидает оплаты/одобрения!');
+      setPromoteProduct(null);
+      fetchProducts();
+    } catch (err) {
+      alert('Ошибка при оформлении продвижения');
+    } finally {
+      setPromoSubmitting(false);
+    }
+  };
+
+  const calculatePromoPrice = () => {
+    if (!adDates.start || !adDates.end) return 0;
+    const s = new Date(adDates.start);
+    const e = new Date(adDates.end);
+    const diff = Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, diff) * 100;
+  };
+
+  const stats = {
+    total: products.length,
+    stockValue: products.reduce((acc, p) => acc + (p.price * p.stock), 0),
+    categories: new Set(products.map(p => p.categoryId)).size
+  };
+
+  const getStatusBadge = (status?: string) => {
+    switch(status) {
+      case 'approved': return { label: 'Активен', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' };
+      case 'rejected': return { label: 'Отклонен', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.1)' };
+      default: return { label: 'Ожидает', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' };
+    }
   };
 
   return (
     <ProtectedRoute allowedRoles={['seller', 'admin']}>
       <div style={{ padding: '2rem 0' }}>
-        {/* Header Section */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+        {/* Header and Stats rows... same as before but optimized */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
           <div>
-            <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('sidebar_products')}</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Управление ассортиментом и аналитика вашего магазина</p>
+            <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('manage_products')}</h1>
+            <p style={{ color: 'var(--text-muted)' }}>Добро пожаловать в панель управления вашим магазином</p>
           </div>
-          <button className="btn-neon" onClick={() => setIsModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 2rem' }}>
-            <Plus size={20} />
-            {t('add_new_product')}
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="btn-neon" 
+            style={{ padding: '1rem 2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+          >
+            <Plus size={20} /> {t('add_new_product')}
           </button>
         </div>
 
-        {/* Stats Row */}
-        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem' }}>
-          <div className="glass-card" style={statCardStyle}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>Всего товаров</span>
-                <Package size={16} />
-             </div>
-             <div style={{ fontSize: '2rem', fontWeight: 800 }}>{products.length}</div>
-          </div>
-          <div className="glass-card" style={statCardStyle}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>Общая стоимость</span>
-                <DollarSign size={16} />
-             </div>
-             <div style={{ fontSize: '2rem', fontWeight: 800 }}>${products.reduce((acc, p) => acc + (p.price * p.stock), 0).toLocaleString()}</div>
-          </div>
-          <div className="glass-card" style={statCardStyle}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>Категории</span>
-                <Layers size={16} />
-             </div>
-             <div style={{ fontSize: '2rem', fontWeight: 800 }}>{new Set(products.map(p => p.categoryId)).size}</div>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+           <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <div style={{ padding: '1rem', background: 'rgba(138, 63, 252, 0.1)', borderRadius: '16px' }}>
+                 <Package size={24} color="var(--primary)" />
+              </div>
+              <div>
+                 <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Всего товаров</div>
+                 <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>{stats.total}</div>
+              </div>
+           </div>
+           <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <div style={{ padding: '1rem', background: 'rgba(0, 224, 255, 0.1)', borderRadius: '16px' }}>
+                 <TrendingUp size={24} color="var(--accent)" />
+              </div>
+              <div>
+                 <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Общая ценность</div>
+                 <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>${stats.stockValue.toLocaleString()}</div>
+              </div>
+           </div>
         </div>
 
-        {/* Filters Bar */}
-        <div className="glass-card" style={{ padding: '1.25rem 2rem', marginBottom: '2rem', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input 
-              placeholder="Поиск по названию или описанию..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', padding: '0.75rem 1rem 0.75rem 3rem', borderRadius: '12px', color: 'white', outline: 'none' }}
-            />
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '6rem' }}>Загрузка товаров...</div>
+        ) : (
+          <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)' }}>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Информация о товаре</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Статус</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Цена / Склад</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Действия</th>
+                   </tr>
+                </thead>
+                <tbody>
+                   {products.map(p => {
+                     const status = getStatusBadge(p.status);
+                     return (
+                       <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td style={{ padding: '1.25rem 2rem' }}>
+                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <img src={p.images[0]} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
+                                <div>
+                                   <div style={{ fontWeight: 700 }}>{p.name}</div>
+                                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.categoryId}</div>
+                                </div>
+                             </div>
+                          </td>
+                          <td style={{ padding: '1.25rem 2rem' }}>
+                             <span style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800, color: status.color, background: status.bg, border: `1px solid ${status.color}30` }}>
+                                {status.label}
+                             </span>
+                             {p.isPromoted && (
+                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent)', fontSize: '0.7rem', fontWeight: 800, marginTop: '0.5rem', textTransform: 'uppercase' }}>
+                                  <Zap size={10} fill="var(--accent)" /> Реклама активна
+                               </div>
+                             )}
+                          </td>
+                          <td style={{ padding: '1.25rem 2rem' }}>
+                             <div style={{ fontWeight: 800 }}>${p.price}</div>
+                             <div style={{ fontSize: '0.75rem', color: p.stock < 10 ? '#EF4444' : 'var(--text-muted)' }}>
+                                {p.stock} шт. на складе
+                             </div>
+                          </td>
+                          <td style={{ padding: '1.25rem 2rem' }}>
+                             <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button 
+                                  onClick={() => setPromoteProduct(p)}
+                                  className="glass-card" 
+                                  style={{ padding: '0.5rem', color: 'var(--accent)' }}
+                                  title="Заказать рекламу"
+                                >
+                                   <Zap size={18} fill={p.isPromoted ? 'currentColor' : 'none'} />
+                                </button>
+                                <button onClick={() => setEditProduct(p)} className="glass-card" style={{ padding: '0.5rem', color: 'var(--primary)' }}><Edit3 size={18} /></button>
+                                <button onClick={() => handleDelete(p.id)} className="glass-card" style={{ padding: '0.5rem', color: '#EF4444' }}><Trash2 size={18} /></button>
+                             </div>
+                          </td>
+                       </tr>
+                     );
+                   })}
+                </tbody>
+             </table>
           </div>
+        )}
 
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <select 
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', padding: '0.75rem 1rem', borderRadius: '12px', color: 'white', outline: 'none', cursor: 'pointer' }}
-            >
-              <option value="all">Все категории</option>
-              <option value="electronics">Электроника</option>
-              <option value="clothes">Одежда</option>
-              <option value="furniture">Мебель</option>
-            </select>
+        {/* Promotion Modal Overlay */}
+        {promoteProduct && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="glass-card" style={{ width: '500px', padding: '3rem', position: 'relative' }}>
+               <button onClick={() => setPromoteProduct(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}><X /></button>
+               
+               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+                  <div style={{ width: '50px', height: '50px', background: 'rgba(0, 224, 255, 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <Zap size={24} color="var(--accent)" fill="var(--accent)" />
+                  </div>
+                  <div>
+                     <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>Продвижение товара</h2>
+                     <p style={{ fontSize: '0.875rem', opacity: 0.6 }}>Ваш товар будет закреплен в топе каталога</p>
+                  </div>
+               </div>
 
-            <select 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', padding: '0.75rem 1rem', borderRadius: '12px', color: 'white', outline: 'none', cursor: 'pointer' }}
-            >
-              <option value="newest">Сначала новые</option>
-              <option value="price-high">Дорогие</option>
-              <option value="price-low">Дешевые</option>
-              <option value="stock">Мало на складе</option>
-            </select>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                  <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--text-muted)' }}>Выберите период</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                     <div>
+                        <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>Начало:</span>
+                        <input type="date" value={adDates.start} onChange={(e) => setAdDates({ ...adDates, start: e.target.value })} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }} />
+                     </div>
+                     <div>
+                        <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>Конец:</span>
+                        <input type="date" value={adDates.end} onChange={(e) => setAdDates({ ...adDates, end: e.target.value })} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }} />
+                     </div>
+                  </div>
+               </div>
+
+               <div style={{ padding: '1.5rem', background: 'rgba(0, 224, 255, 0.05)', borderRadius: '12px', border: '1px solid var(--accent)30', marginBottom: '2rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                     <span style={{ color: 'var(--text-muted)' }}>Тариф:</span>
+                     <span>$100.00 / день</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.25rem', fontWeight: 900 }}>
+                     <span>Итого к оплате:</span>
+                     <span style={{ color: 'var(--accent)' }}>${calculatePromoPrice()}</span>
+                  </div>
+               </div>
+
+               <button 
+                 disabled={calculatePromoPrice() <= 0 || promoSubmitting}
+                 onClick={handleApplyPromo}
+                 className="btn-neon" 
+                 style={{ width: '100%', padding: '1rem', background: 'var(--accent)', boxShadow: '0 0 20px rgba(0, 224, 255, 0.4)' }}
+               >
+                  {promoSubmitting ? 'Обработка...' : 'Подтвердить и купить'}
+               </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {isModalOpen && <AddProductModal onClose={() => setIsModalOpen(false)} onSuccess={fetchProducts} />}
-        {editingProduct && (
-          <EditProductModal 
-            product={editingProduct} 
-            onClose={() => setEditingProduct(null)} 
+        {isAddModalOpen && (
+          <AddProductModal 
+            isOpen={isAddModalOpen} 
+            onClose={() => setIsAddModalOpen(false)} 
             onSuccess={fetchProducts} 
           />
         )}
-
-        {/* Product List */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem' }}>{t('processing')}</div>
-        ) : filteredProducts.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {filteredProducts.map(product => (
-              <div key={product.id} className="glass-card" style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 120px', alignItems: 'center', padding: '1rem 2rem', gap: '2rem' }}>
-                {/* Image */}
-                <div style={{ width: '80px', height: '80px', borderRadius: '12px', background: 'var(--bg-side)', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                  <img src={product.images?.[0]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-
-                {/* Info */}
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '1.125rem', marginBottom: '0.25rem' }}>{product.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>{product.categoryId}</div>
-                </div>
-
-                {/* Financials */}
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Цена / Себест.</div>
-                  <div style={{ fontWeight: 700 }}>
-                    <span style={{ color: 'white' }}>${product.price.toFixed(2)}</span>
-                    <span style={{ color: 'var(--text-muted)', margin: '0 0.5rem' }}>/</span>
-                    <span style={{ color: 'var(--text-muted)' }}>${product.cost.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* Variation & Stock */}
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Запасы / Варианты</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ 
-                      fontWeight: 700, 
-                      color: product.stock < 10 ? '#EF4444' : '#10B981' 
-                    }}>
-                      {product.stock} шт.
-                    </span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                      ({(product.colors?.length || 0) + (product.sizes?.length || 0)} вар.)
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                  <button 
-                    onClick={() => setEditingProduct(product)}
-                    className="glass-card"
-                    style={{ padding: '0.6rem', borderRadius: '8px', color: 'var(--accent)', cursor: 'pointer' }}
-                  >
-                    <Edit3 size={18} />
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(product.id)}
-                    className="glass-card"
-                    style={{ padding: '0.6rem', borderRadius: '8px', color: '#EF4444', cursor: 'pointer' }}
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="glass-card" style={{ padding: '6rem', textAlign: 'center', borderStyle: 'dashed' }}>
-            <div style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-              <Package size={48} style={{ opacity: 0.3, marginBottom: '1rem', display: 'block', margin: '0 auto' }} />
-              Ничего не найдено по вашему запросу
-            </div>
-            {(searchQuery || selectedCategory !== 'all') && (
-              <button className="btn-neon" onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}>Сбросить фильтры</button>
-            )}
-          </div>
+        
+        {editProduct && (
+          <EditProductModal 
+            isOpen={!!editProduct} 
+            product={editProduct} 
+            onClose={() => setEditProduct(null)} 
+            onSuccess={fetchProducts} 
+          />
         )}
       </div>
     </ProtectedRoute>

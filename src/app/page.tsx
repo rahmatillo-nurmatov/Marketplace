@@ -64,7 +64,7 @@ function HomeContent() {
 
   // Combined Filtering Logic
   useEffect(() => {
-    let result = [...products];
+    let result = [...products].filter(p => p.status === 'approved');
 
     // 1. Category Filter
     if (selectedCategory !== 'all') {

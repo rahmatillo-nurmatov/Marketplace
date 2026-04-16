@@ -17,6 +17,10 @@ export interface Product {
   colors?: string[];
   sizes?: string[];
   sellerId: string;
+  status: 'pending' | 'approved' | 'rejected';
+  isPromoted?: boolean;
+  adStartDate?: number;
+  adEndDate?: number;
   createdAt: number;
   updatedAt: number;
 }
