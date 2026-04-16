@@ -12,6 +12,7 @@ export interface UserProfile {
   email: string | null;
   displayName: string | null;
   role: UserRole;
+  addresses?: string[];
   createdAt: number;
 }
 
@@ -24,6 +25,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updateRole: (role: UserRole) => Promise<void>;
+  updateAddresses: (addresses: string[]) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -35,6 +37,7 @@ const AuthContext = createContext<AuthContextType>({
   signInWithEmail: async () => {},
   logout: async () => {},
   updateRole: async () => {},
+  updateAddresses: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -108,8 +111,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setProfile(prev => prev ? { ...prev, role: newRole } : null);
   };
 
+  const updateAddresses = async (newAddresses: string[]) => {
+    if (!user) return;
+    const userDocRef = doc(db, 'users', user.uid);
+    await setDoc(userDocRef, { addresses: newAddresses }, { merge: true });
+    setProfile(prev => prev ? { ...prev, addresses: newAddresses } : null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, signUpWithEmail, signInWithEmail, logout, updateRole }}>
+    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, signUpWithEmail, signInWithEmail, logout, updateRole, updateAddresses }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,11 +7,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { UserRole } from '@/contexts/AuthContext';
 import { 
   User, Mail, Shield, CreditCard, Settings, 
-  Camera, Check, X, ShieldAlert, Briefcase, ShoppingBag 
+  Camera, Check, X, ShieldAlert, Briefcase, ShoppingBag,
+  MapPin, Plus, Trash2
 } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, profile, updateRole } = useAuth();
+  const { user, profile, updateRole, updateAddresses } = useAuth();
   const { t } = useLanguage();
   
   const [isEditingNick, setIsEditingNick] = useState(false);
@@ -21,6 +22,10 @@ export default function ProfilePage() {
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [isChangingPhoto, setIsChangingPhoto] = useState(false);
   const [isSettingSecurity, setIsSettingSecurity] = useState(false);
+
+  // Address State
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState('');
 
   if (!user) return null;
 
@@ -34,6 +39,20 @@ export default function ProfilePage() {
     { id: 'seller', icon: Briefcase, color: '#8a3ffc', label: 'Продавец' },
     { id: 'admin', icon: ShieldAlert, color: '#EF4444', label: 'Администратор' }
   ];
+
+  const handleAddAddress = async () => {
+    if (!newAddress.trim()) return;
+    const updated = [...(profile?.addresses || []), newAddress.trim()];
+    await updateAddresses(updated);
+    setNewAddress('');
+    setIsAddingAddress(false);
+  };
+
+  const handleRemoveAddress = async (index: number) => {
+    const updated = [...(profile?.addresses || [])];
+    updated.splice(index, 1);
+    await updateAddresses(updated);
+  };
 
   return (
     <ProtectedRoute allowedRoles={['client', 'seller', 'admin']}>
@@ -142,6 +161,58 @@ export default function ProfilePage() {
 
           {/* Right Side: Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+             {/* Addresses Section */}
+             <div className="glass-card" style={{ padding: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                   <h3 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <MapPin size={20} color="var(--primary)" />
+                      {t('shipping_address')}
+                   </h3>
+                   <button 
+                     onClick={() => setIsAddingAddress(true)}
+                     style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.875rem' }}
+                   >
+                     <Plus size={16} /> Добавить
+                   </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                   {profile?.addresses?.map((addr, idx) => (
+                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: '0.9rem', flex: 1, marginRight: '1rem' }}>{addr}</div>
+                        <button 
+                          onClick={() => handleRemoveAddress(idx)}
+                          style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: '0.5rem' }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                     </div>
+                   ))}
+                   
+                   {isAddingAddress && (
+                     <div style={{ padding: '1rem', background: 'rgba(138, 63, 252, 0.05)', borderRadius: '12px', border: '1px solid var(--primary)' }}>
+                        <textarea 
+                          autoFocus
+                          value={newAddress}
+                          onChange={(e) => setNewAddress(e.target.value)}
+                          placeholder="Введите полный адрес доставки..."
+                          style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', outline: 'none', minHeight: '80px', resize: 'none', fontSize: '0.9rem', marginBottom: '1rem' }}
+                        />
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                           <button onClick={handleAddAddress} style={{ background: 'var(--primary)', border: 'none', color: 'white', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Сохранить</button>
+                           <button onClick={() => { setIsAddingAddress(false); setNewAddress(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>Отмена</button>
+                        </div>
+                     </div>
+                   )}
+
+                   {(!profile?.addresses || profile.addresses.length === 0) && !isAddingAddress && (
+                     <div style={{ padding: '2rem', textAlign: 'center', border: '1px dashed var(--border)', borderRadius: '12px', color: 'var(--text-muted)' }}>
+                        У вас пока нет сохраненных адресов
+                     </div>
+                   )}
+                </div>
+             </div>
+
              <div className="glass-card" style={{ padding: '2rem' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                    <Settings size={20} color="var(--primary)" />

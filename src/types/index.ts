@@ -56,6 +56,7 @@ export interface AppUser {
   uid: string;
   email: string | null;
   role: UserRole;
+  addresses?: string[];
   displayName?: string;
   photoURL?: string;
 }
