@@ -26,14 +26,15 @@ export const orderService = {
   async getOrdersByClient(clientId: string): Promise<Order[]> {
     const q = query(
       collection(db, COLLECTION_NAME), 
-      where('clientId', '==', clientId),
-      orderBy('createdAt', 'desc')
+      where('clientId', '==', clientId)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const docs = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as Order));
+    
+    return docs.sort((a, b) => b.createdAt - a.createdAt);
   },
 
   async getOrderById(id: string): Promise<Order | null> {
