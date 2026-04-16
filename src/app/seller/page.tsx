@@ -252,7 +252,6 @@ export default function SellerDashboard() {
 
         {isAddModalOpen && (
           <AddProductModal 
-            isOpen={isAddModalOpen} 
             onClose={() => setIsAddModalOpen(false)} 
             onSuccess={fetchProducts} 
           />
@@ -260,7 +259,6 @@ export default function SellerDashboard() {
         
         {editProduct && (
           <EditProductModal 
-            isOpen={!!editProduct} 
             product={editProduct} 
             onClose={() => setEditProduct(null)} 
             onSuccess={fetchProducts} 
