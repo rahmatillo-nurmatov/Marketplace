@@ -14,6 +14,8 @@ export interface Product {
   stock: number;
   categoryId: string;
   images: string[];
+  colors?: string[];
+  sizes?: string[];
   sellerId: string;
   createdAt: number;
   updatedAt: number;
