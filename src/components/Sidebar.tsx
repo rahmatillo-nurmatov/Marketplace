@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   LayoutGrid, ShoppingCart, History, User, 
-  Package, ShoppingBag, ShieldCheck, LogOut 
+  Package, ShoppingBag, ShieldCheck, LogOut, MessageSquare 
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -27,6 +27,7 @@ export function Sidebar() {
   const sellerItems = [
     { label: t('sidebar_products'), path: '/seller', icon: Package },
     { label: t('sidebar_orders'), path: '/seller/orders', icon: ShoppingBag },
+    { label: 'Отзывы', path: '/seller/reviews', icon: MessageSquare },
   ];
 
   const adminItems = [

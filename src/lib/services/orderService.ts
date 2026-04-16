@@ -59,5 +59,10 @@ export const orderService = {
     const { updateDoc } = await import('firebase/firestore');
     const docRef = doc(db, COLLECTION_NAME, id);
     await updateDoc(docRef, { status, updatedAt: Date.now() });
+  },
+
+  async checkIfUserBoughtProduct(clientId: string, productId: string): Promise<boolean> {
+    const orders = await this.getOrdersByClient(clientId);
+    return orders.some(order => order.items.some(item => item.productId === productId));
   }
 };

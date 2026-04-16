@@ -3,63 +3,72 @@
 import React from 'react';
 import Link from 'next/link';
 import { Product } from '@/types';
-import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Star } from 'lucide-react';
+import { ShoppingCart, Star, ArrowRight } from 'lucide-react';
 
-export function ProductCard({ product }: { product: Product }) {
-  const { user } = useAuth();
+interface ProductCardProps {
+  product: Product;
+}
+
+export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { t } = useLanguage();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1);
+    addToCart(product);
   };
 
-  const displayName = t(product.name as any) || product.name;
-
   return (
-    <Link href={`/products/${product.id}`} className="glass-card product-card-cyber" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--accent))', padding: '2px' }}>
-          <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--bg-side)', overflow: 'hidden' }}>
-            <img src={product.images?.[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    <Link href={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <div className="glass-card product-card-cyber" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.25rem' }}>
+          <img 
+            src={product.images[0]} 
+            alt={product.name} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
+            onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+            onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+          />
+          <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, color: 'var(--primary)', border: '1px solid rgba(138, 63, 252, 0.3)' }}>
+             -{Math.round(((product.cost || 100) / product.price) * 10)}%
           </div>
         </div>
-        <div>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>{displayName}</h3>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>{product.stock} {t('stock')}</p>
-        </div>
-      </div>
 
-      <div style={{ position: 'relative', height: '120px', marginBottom: '1.25rem', borderRadius: '12px', overflow: 'hidden', background: 'rgba(0,0,0,0.2)' }}>
-        <img src={product.images?.[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} />
-        <div className="chart-line" />
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
-        <div>
-          <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>{t('price')}</p>
-          <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>${product.price.toFixed(2)}</p>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800, marginBottom: '0.25rem' }}>{t('rating')}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#FBBF24' }}>
-            <Star size={14} fill="#FBBF24" />
-            <span style={{ fontWeight: 800, fontSize: '1rem' }}>{(Math.random() * 1.5 + 3.5).toFixed(1)}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>{product.name}</h3>
+             <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.125rem' }}>${product.price}</div>
           </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
+             <div style={{ display: 'flex', color: '#F59E0B' }}>
+                <Star size={14} fill="currentColor" />
+             </div>
+             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>4.8 (124 ratings)</span>
+          </div>
+
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {product.description}
+          </p>
         </div>
-      </div>
 
-      <button onClick={handleAddToCart} className="btn-neon" style={{ width: '100%', borderRadius: '12px', fontWeight: 700 }}>
-        {t('add_to_cart')}
-      </button>
-
-      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'center' }}>
-         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t(product.categoryId as any)}</span>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+           <button 
+             onClick={handleAddToCart}
+             className="btn-neon" 
+             style={{ flex: 1, padding: '0.75rem', fontSize: '0.8rem', background: 'rgba(138, 63, 252, 0.1)', border: '1px solid var(--primary)', color: 'white', boxShadow: 'none' }}
+           >
+              <ShoppingCart size={16} />
+           </button>
+           <div className="btn-neon" style={{ flex: 3, padding: '0.75rem', fontSize: '0.8rem' }}>
+              Подробнее <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />
+           </div>
+        </div>
+        
+        <div className="chart-line"></div>
       </div>
     </Link>
   );
