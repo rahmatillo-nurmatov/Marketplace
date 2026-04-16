@@ -12,26 +12,35 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import { Product } from '@/types';
+import { MOCK_PRODUCTS } from '../data/mockProducts';
 
 const COLLECTION_NAME = 'products';
 
 export const productService = {
   async getProducts(): Promise<Product[]> {
     const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-    return querySnapshot.docs.map(doc => ({
+    const firestoreProducts = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as Product));
+
+    return firestoreProducts.length > 0 ? firestoreProducts : MOCK_PRODUCTS;
   },
 
-  async getProductById(id: string): Promise<Product | null> {
-    const docRef = doc(db, COLLECTION_NAME, id);
+  async getProductById(id: string | string[]): Promise<Product | null> {
+    const actualId = Array.isArray(id) ? id[0] : id;
+    if (!actualId) return null;
+
+    const docRef = doc(db, COLLECTION_NAME, actualId);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
       return { id: docSnap.id, ...docSnap.data() } as Product;
     }
-    return null;
+
+    // Fallback to MOCK_PRODUCTS for demo consistency
+    const mock = MOCK_PRODUCTS.find(p => p.id === actualId);
+    return mock || null;
   },
 
   async getSellerProducts(sellerId: string): Promise<Product[]> {
