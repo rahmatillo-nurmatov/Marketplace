@@ -8,6 +8,7 @@ import { orderService } from '@/lib/services/orderService';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { Product, Review as ReviewType } from '@/types';
 import { 
   Star, ShoppingCart, ShieldCheck, Truck, 
@@ -25,6 +26,8 @@ export default function ProductDetailsPage() {
   const [reviews, setReviews] = useState<ReviewType[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasBought, setHasBought] = useState(false);
+  
+  const { content: translatedContent } = useProductTranslation(product);
   
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
@@ -166,7 +169,7 @@ export default function ProductDetailsPage() {
                    <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginLeft: '0.25rem' }}>({reviews.length})</span>
                 </div>
               </div>
-              <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '0.5rem', lineHeight: 1.1 }}>{product.name}</h1>
+              <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '0.5rem', lineHeight: 1.1, transition: 'opacity 0.3s' }}>{translatedContent.name}</h1>
               
            </div>
 
@@ -182,7 +185,7 @@ export default function ProductDetailsPage() {
 
            <div className="glass-card" style={{ padding: '2rem' }}>
              <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 700 }}>Характеристики и описание</h3>
-             <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', lineHeight: 1.8 }}>{product.description}</p>
+             <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', lineHeight: 1.8, transition: 'opacity 0.3s' }}>{translatedContent.description}</p>
              <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                  <Calendar size={16} /> Добавлено: {new Date(product.createdAt).toLocaleDateString()}

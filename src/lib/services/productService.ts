@@ -25,7 +25,7 @@ export const productService = {
         ...doc.data()
       } as Product));
 
-      return firestoreProducts.length > 0 ? firestoreProducts : MOCK_PRODUCTS;
+      return [...firestoreProducts, ...MOCK_PRODUCTS];
     } catch (err) {
       console.error("Firestore getProducts error, falling back to mock:", err);
       return MOCK_PRODUCTS;

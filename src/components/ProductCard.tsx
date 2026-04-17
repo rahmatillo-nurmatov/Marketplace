@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { ShoppingCart, Star, ArrowRight } from 'lucide-react';
 
 interface ProductCardProps {
@@ -14,6 +15,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { t } = useLanguage();
+  const { content } = useProductTranslation(product);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.25rem' }}>
           <img 
             src={product.images[0]} 
-            alt={product.name} 
+            alt={content.name} 
             style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
             onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
             onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
@@ -39,7 +41,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>{product.name}</h3>
+             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', transition: 'opacity 0.3s' }}>
+                {content.name}
+             </h3>
              <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.125rem' }}>${product.price}</div>
           </div>
           
@@ -50,8 +54,8 @@ export function ProductCard({ product }: ProductCardProps) {
              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>4.8 (124 ratings)</span>
           </div>
 
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {product.description}
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', transition: 'opacity 0.3s' }}>
+            {content.description}
           </p>
         </div>
       </Link>

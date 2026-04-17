@@ -23,6 +23,12 @@ export interface Product {
   adEndDate?: number;
   createdAt: number;
   updatedAt: number;
+  translations?: {
+    [langCode: string]: {
+      name: string;
+      description: string;
+    }
+  };
 }
 
 export type OrderStatus = 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -32,6 +38,8 @@ export interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  image?: string;
+  sellerId?: string;
 }
 
 export interface Order {
@@ -41,6 +49,8 @@ export interface Order {
   total: number;
   status: OrderStatus;
   shippingAddress: string;
+  paymentMethod?: string;
+  cardLast4?: string;
   createdAt: number;
   updatedAt: number;
 }
