@@ -23,7 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className="glass-card product-card-cyber" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Link href={`/product/${encodeURIComponent(product.id)}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <Link href={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.25rem' }}>
           <img 
             src={product.images[0]} 
@@ -64,7 +64,7 @@ export function ProductCard({ product }: ProductCardProps) {
          >
             <ShoppingCart size={16} />
          </button>
-         <Link href={`/product/${encodeURIComponent(product.id)}`} className="btn-neon" style={{ flex: 3, padding: '0.75rem', fontSize: '0.8rem', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+         <Link href={`/product/${product.id}`} className="btn-neon" style={{ flex: 3, padding: '0.75rem', fontSize: '0.8rem', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             Подробнее <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />
          </Link>
       </div>

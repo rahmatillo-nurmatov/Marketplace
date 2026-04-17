@@ -11,14 +11,14 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Product, Review as ReviewType } from '@/types';
 import { 
   Star, ShoppingCart, ShieldCheck, Truck, 
-  ArrowLeft, MessageSquare, User, Package, Box 
+  ArrowLeft, MessageSquare, User, Package, Box, Tag, Calendar, Hash
 } from 'lucide-react';
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const { addToCart } = useCart();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -28,6 +28,7 @@ export default function ProductDetailsPage() {
   
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [activeImage, setActiveImage] = useState(0);
   
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(5);
@@ -52,7 +53,7 @@ export default function ProductDetailsPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
     }
-  }, [id]);
+  }, [id, user]);
 
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +69,7 @@ export default function ProductDetailsPage() {
         comment: newComment
       });
       setNewComment('');
-      // Refresh reviews
+      
       const updated = await reviewService.getReviewsByProduct(decodedId);
       setReviews(updated);
     } catch (err) {
@@ -81,15 +82,24 @@ export default function ProductDetailsPage() {
   const handleAddToCart = () => {
     if (product) {
        addToCart(product);
-       alert(t('add_to_cart_success'));
+       alert(t('add_to_cart_success')); // Or localized string
     }
   };
 
-  if (loading) return <div style={{ padding: '10rem', textAlign: 'center' }}>{t('processing')}</div>;
-  if (!product) return <div style={{ padding: '10rem', textAlign: 'center' }}>Product not found</div>;
+  if (loading) return <div style={{ padding: '10rem', textAlign: 'center', color: 'var(--text-muted)' }}>{t('processing')}</div>;
+  if (!product) return (
+    <div style={{ padding: '10rem', textAlign: 'center' }}>
+      <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Товар не найден</h2>
+      <button onClick={() => router.back()} className="btn-neon">{t('back')}</button>
+    </div>
+  );
+
+  const getCategoryName = (catId: string) => {
+    return t(catId as any) || catId;
+  };
 
   return (
-    <div style={{ padding: '2rem 0' }}>
+    <div style={{ padding: '2rem 0', maxWidth: '1400px', margin: '0 auto' }}>
       <button 
         onClick={() => router.back()}
         style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', fontWeight: 600 }}
@@ -97,38 +107,82 @@ export default function ProductDetailsPage() {
         <ArrowLeft size={18} /> {t('back')}
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 1fr', gap: '4rem', marginBottom: '5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 1.2fr', gap: '4rem', marginBottom: '5rem' }}>
         {/* Gallery */}
-        <div style={{ position: 'sticky', top: '2rem', height: 'fit-content' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div className="glass-card" style={{ padding: '1rem', borderRadius: '24px', overflow: 'hidden' }}>
              <img 
-               src={product.images[0]} 
+               src={product.images[activeImage] || 'https://via.placeholder.com/600'} 
                alt={product.name} 
                style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: '16px' }} 
              />
           </div>
+          {product.images.length > 1 && (
+            <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              {product.images.map((img, i) => (
+                <img 
+                  key={i}
+                  src={img}
+                  alt={`Thumbnail ${i}`}
+                  onClick={() => setActiveImage(i)}
+                  style={{ 
+                    width: '80px', height: '80px', objectFit: 'cover', borderRadius: '12px', 
+                    cursor: 'pointer', border: activeImage === i ? '2px solid var(--primary)' : '2px solid transparent',
+                    opacity: activeImage === i ? 1 : 0.6
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Info */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
            <div>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', color: '#F59E0B' }}>
-                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill={i < Math.round(reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1)) ? 'currentColor' : 'none'} />)}
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                <span className="badge-pro" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <Tag size={12} /> {getCategoryName(product.categoryId)}
+                </span>
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <Hash size={12} /> ID: {product.id}
+                </span>
+                <div style={{ display: 'flex', color: '#F59E0B', alignItems: 'center', gap: '0.25rem' }}>
+                   {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.round(reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1)) ? 'currentColor' : 'none'} />)}
+                   <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginLeft: '0.25rem' }}>({reviews.length})</span>
                 </div>
-                <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>({reviews.length} {t('reviews')})</span>
               </div>
-              <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1rem', lineHeight: 1.1 }}>{product.name}</h1>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)' }}>${product.price.toFixed(2)}</div>
+              <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '0.5rem', lineHeight: 1.1 }}>{product.name}</h1>
+              
            </div>
 
-           <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', lineHeight: 1.6 }}>{product.description}</p>
+           <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+             <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary)' }}>${product.price.toFixed(2)}</div>
+             <div style={{ textAlign: 'right' }}>
+               <div style={{ fontWeight: 800, color: product.stock > 0 ? '#10B981' : '#EF4444', marginBottom: '0.25rem' }}>
+                 {product.stock > 0 ? `В наличии: ${product.stock} шт.` : 'Нет в наличии'}
+               </div>
+               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Продавец: {product.sellerId}</div>
+             </div>
+           </div>
 
-           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', padding: '2.5rem 0', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+           <div className="glass-card" style={{ padding: '2rem' }}>
+             <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 700 }}>Характеристики и описание</h3>
+             <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', lineHeight: 1.8 }}>{product.description}</p>
+             <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                 <Calendar size={16} /> Добавлено: {new Date(product.createdAt).toLocaleDateString()}
+               </span>
+               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                 <Box size={16} /> Статус: {product.status === 'approved' ? 'Одобрено' : 'На проверке'}
+               </span>
+             </div>
+           </div>
+
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', padding: '1.5rem 0' }}>
               {product.colors && product.colors.length > 0 && (
                 <div>
                   <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '1rem' }}>{t('colors')}</h4>
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                      {product.colors.map(c => (
                        <button 
                          key={c}
@@ -145,7 +199,7 @@ export default function ProductDetailsPage() {
               {product.sizes && product.sizes.length > 0 && (
                 <div>
                   <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '1rem' }}>{t('sizes')}</h4>
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                      {product.sizes.map(s => (
                        <button 
                          key={s}
@@ -163,21 +217,23 @@ export default function ProductDetailsPage() {
            <div style={{ display: 'flex', gap: '1.5rem' }}>
               <button 
                 onClick={handleAddToCart}
+                disabled={product.stock <= 0}
                 className="btn-neon" 
-                style={{ flex: 1, padding: '1.5rem', fontSize: '1.125rem' }}
+                style={{ flex: 1, padding: '1.5rem', fontSize: '1.125rem', opacity: product.stock <= 0 ? 0.5 : 1 }}
               >
-                <ShoppingCart size={20} style={{ marginRight: '0.75rem' }} /> {t('add_to_cart')}
+                <ShoppingCart size={20} style={{ marginRight: '0.75rem' }} /> 
+                {product.stock > 0 ? t('add_to_cart') : 'Нет в наличии'}
               </button>
            </div>
 
            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1rem' }}>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                  <ShieldCheck size={20} color="#10B981" />
-                 <span>Гарантия безопасности</span>
+                 <span>Гарантия безопасности платформы</span>
               </div>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                  <Truck size={20} color="var(--primary)" />
-                 <span>Экспресс доставка</span>
+                 <span>Экспресс доставка от продавца</span>
               </div>
            </div>
         </div>
