@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,6 +12,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
   const { addToCart } = useCart();
   const { t } = useLanguage();
 
@@ -21,9 +22,16 @@ export function ProductCard({ product }: ProductCardProps) {
     addToCart(product);
   };
 
+  const handleCardClick = () => {
+    router.push(`/product/${product.id}`);
+  };
+
   return (
-    <Link href={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div className="glass-card product-card-cyber" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div 
+      className="glass-card product-card-cyber" 
+      onClick={handleCardClick}
+      style={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+    >
         <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.25rem' }}>
           <img 
             src={product.images[0]} 
@@ -70,6 +78,5 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <div className="chart-line"></div>
       </div>
-    </Link>
   );
 }
