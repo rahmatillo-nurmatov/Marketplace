@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,7 +12,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const router = useRouter();
   const { addToCart } = useCart();
   const { t } = useLanguage();
 
@@ -22,16 +21,9 @@ export function ProductCard({ product }: ProductCardProps) {
     addToCart(product);
   };
 
-  const handleCardClick = () => {
-    router.push(`/product/${product.id}`);
-  };
-
   return (
-    <div 
-      className="glass-card product-card-cyber" 
-      onClick={handleCardClick}
-      style={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
-    >
+    <div className="glass-card product-card-cyber" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Link href={`/product/${encodeURIComponent(product.id)}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.25rem' }}>
           <img 
             src={product.images[0]} 
@@ -62,21 +54,22 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.description}
           </p>
         </div>
+      </Link>
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-           <button 
-             onClick={handleAddToCart}
-             className="btn-neon" 
-             style={{ flex: 1, padding: '0.75rem', fontSize: '0.8rem', background: 'rgba(138, 63, 252, 0.1)', border: '1px solid var(--primary)', color: 'white', boxShadow: 'none' }}
-           >
-              <ShoppingCart size={16} />
-           </button>
-           <div className="btn-neon" style={{ flex: 3, padding: '0.75rem', fontSize: '0.8rem' }}>
-              Подробнее <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />
-           </div>
-        </div>
-        
-        <div className="chart-line"></div>
+      <div style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto' }}>
+         <button 
+           onClick={handleAddToCart}
+           className="btn-neon" 
+           style={{ flex: 1, padding: '0.75rem', fontSize: '0.8rem', background: 'rgba(138, 63, 252, 0.1)', border: '1px solid var(--primary)', color: 'white', boxShadow: 'none' }}
+         >
+            <ShoppingCart size={16} />
+         </button>
+         <Link href={`/product/${encodeURIComponent(product.id)}`} className="btn-neon" style={{ flex: 3, padding: '0.75rem', fontSize: '0.8rem', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            Подробнее <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />
+         </Link>
       </div>
+      
+      <div className="chart-line"></div>
+    </div>
   );
 }
