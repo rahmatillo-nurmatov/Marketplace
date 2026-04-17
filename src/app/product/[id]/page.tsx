@@ -36,10 +36,12 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     if (id) {
       setLoading(true);
+      const decodedId = decodeURIComponent(id as string);
+      
       Promise.all([
-        productService.getProductById(id as string),
-        reviewService.getReviewsByProduct(id as string),
-        user ? orderService.checkIfUserBoughtProduct(user.uid, id as string) : Promise.resolve(false)
+        productService.getProductById(decodedId),
+        reviewService.getReviewsByProduct(decodedId),
+        user ? orderService.checkIfUserBoughtProduct(user.uid, decodedId) : Promise.resolve(false)
       ]).then(([p, r, bought]) => {
         setProduct(p);
         setReviews(r);
@@ -58,15 +60,16 @@ export default function ProductDetailsPage() {
 
     setSubmittingReview(true);
     try {
+      const decodedId = decodeURIComponent(id as string);
       await reviewService.addReview({
-        productId: id as string,
+        productId: decodedId,
         clientId: user.uid,
         rating: newRating,
         comment: newComment
       });
       setNewComment('');
       // Refresh reviews
-      const updated = await reviewService.getReviewsByProduct(id as string);
+      const updated = await reviewService.getReviewsByProduct(decodedId);
       setReviews(updated);
     } catch (err) {
       console.error(err);
