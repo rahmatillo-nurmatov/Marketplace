@@ -81,7 +81,7 @@ export function useProductTranslation(product: Product | null) {
     return () => {
       isMounted = false;
     };
-  }, [language, product.id, product.name, product.description, product.translations]);
+  }, [language, product?.id, product?.name, product?.description, product?.translations]);
 
   return { content, isTranslating };
 }
