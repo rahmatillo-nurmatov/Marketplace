@@ -35,9 +35,9 @@ export default function ProfilePage() {
   };
 
   const roles: { id: UserRole; icon: any; color: string; label: string }[] = [
-    { id: 'client', icon: ShoppingBag, color: '#3B82F6', label: 'Покупатель' },
-    { id: 'seller', icon: Briefcase, color: '#8a3ffc', label: 'Продавец' },
-    { id: 'admin', icon: ShieldAlert, color: '#EF4444', label: 'Администратор' }
+    { id: 'client', icon: ShoppingBag, color: '#3B82F6', label: t('role_buyer') },
+    { id: 'seller', icon: Briefcase, color: '#8a3ffc', label: t('role_seller') },
+    { id: 'admin', icon: ShieldAlert, color: '#EF4444', label: t('role_admin') }
   ];
 
   const handleAddAddress = async () => {
@@ -104,7 +104,7 @@ export default function ProfilePage() {
                     <p style={{ fontWeight: 700, color: 'var(--primary)', textTransform: 'capitalize' }}>{profile?.role || 'client'}</p>
                  </div>
                  <div>
-                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Orders</p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('orders_count')}</p>
                     <p style={{ fontWeight: 700 }}>12</p>
                  </div>
               </div>
@@ -114,10 +114,10 @@ export default function ProfilePage() {
             <div className="glass-card" style={{ padding: '2rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                  <ShieldAlert size={20} color="var(--primary)" />
-                 Выбор активной роли
+                 {t('active_role_selection')}
               </h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                Измените вашу роль для доступа к различным разделам магазина.
+                {t('active_role_desc')}
               </p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -148,7 +148,7 @@ export default function ProfilePage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 700, color: isActive ? role.color : 'white' }}>{role.label}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {isActive ? 'Текущая роль' : `Переключиться на ${role.label.toLowerCase()}`}
+                          {isActive ? t('current_role') : t('switch_to_role', { role: role.label.toLowerCase() })}
                         </div>
                       </div>
                       {isActive && <Check size={20} color={role.color} />}
@@ -172,7 +172,7 @@ export default function ProfilePage() {
                      onClick={() => setIsAddingAddress(true)}
                      style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.875rem' }}
                    >
-                     <Plus size={16} /> Добавить
+                     <Plus size={16} /> {t('add_btn')}
                    </button>
                 </div>
 
@@ -195,19 +195,19 @@ export default function ProfilePage() {
                           autoFocus
                           value={newAddress}
                           onChange={(e) => setNewAddress(e.target.value)}
-                          placeholder="Введите полный адрес доставки..."
+                          placeholder={t('address_placeholder')}
                           style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', outline: 'none', minHeight: '80px', resize: 'none', fontSize: '0.9rem', marginBottom: '1rem' }}
                         />
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                           <button onClick={handleAddAddress} style={{ background: 'var(--primary)', border: 'none', color: 'white', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Сохранить</button>
-                           <button onClick={() => { setIsAddingAddress(false); setNewAddress(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>Отмена</button>
+                           <button onClick={handleAddAddress} style={{ background: 'var(--primary)', border: 'none', color: 'white', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>{t('save_btn')}</button>
+                           <button onClick={() => { setIsAddingAddress(false); setNewAddress(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>{t('cancel_btn')}</button>
                         </div>
                      </div>
                    )}
 
                    {(!profile?.addresses || profile.addresses.length === 0) && !isAddingAddress && (
                      <div style={{ padding: '2rem', textAlign: 'center', border: '1px dashed var(--border)', borderRadius: '12px', color: 'var(--text-muted)' }}>
-                        У вас пока нет сохраненных адресов
+                        {t('no_addresses')}
                      </div>
                    )}
                 </div>
@@ -263,10 +263,10 @@ export default function ProfilePage() {
                 </h3>
                 {isAddingCard ? (
                   <div style={{ padding: '1rem', border: '1px solid var(--accent)', borderRadius: '12px', background: 'rgba(0, 224, 255, 0.05)' }}>
-                     <input placeholder="Card Number" style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', outline: 'none', marginBottom: '0.5rem' }} />
+                     <input placeholder={t('card_number_placeholder')} style={{ width: '100%', background: 'transparent', border: 'none', color: 'white', outline: 'none', marginBottom: '0.5rem' }} />
                      <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button onClick={() => setIsAddingCard(false)} className="btn-neon" style={{ background: 'var(--accent)', scale: '0.8' }}>Save</button>
-                        <button onClick={() => setIsAddingCard(false)} style={{ background: 'transparent', color: 'white', border: 'none', cursor: 'pointer' }}>Cancel</button>
+                        <button onClick={() => setIsAddingCard(false)} className="btn-neon" style={{ background: 'var(--accent)', scale: '0.8' }}>{t('save_btn')}</button>
+                        <button onClick={() => setIsAddingCard(false)} style={{ background: 'transparent', color: 'white', border: 'none', cursor: 'pointer' }}>{t('cancel_btn')}</button>
                      </div>
                   </div>
                 ) : (

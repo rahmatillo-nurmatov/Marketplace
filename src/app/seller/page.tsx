@@ -61,11 +61,11 @@ export default function SellerDashboard() {
       const start = new Date(adDates.start).getTime();
       const end = new Date(adDates.end).getTime();
       await productService.purchasePromotion(promoteProduct.id, start, end);
-      alert('Заявка на продвижение отправлена и ожидает оплаты/одобрения!');
+      alert(t('promo_sent_notice'));
       setPromoteProduct(null);
       fetchProducts();
     } catch (err) {
-      alert('Ошибка при оформлении продвижения');
+      alert(t('promo_error'));
     } finally {
       setPromoSubmitting(false);
     }
@@ -87,9 +87,9 @@ export default function SellerDashboard() {
 
   const getStatusBadge = (status?: string) => {
     switch(status) {
-      case 'approved': return { label: 'Активен', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' };
-      case 'rejected': return { label: 'Отклонен', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.1)' };
-      default: return { label: 'Ожидает', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' };
+      case 'approved': return { label: t('status_active'), color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' };
+      case 'rejected': return { label: t('status_rejected'), color: '#EF4444', bg: 'rgba(239, 68, 68, 0.1)' };
+      default: return { label: t('status_waiting'), color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' };
     }
   };
 
@@ -100,7 +100,7 @@ export default function SellerDashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
           <div>
             <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('manage_products')}</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Добро пожаловать в панель управления вашим магазином</p>
+            <p style={{ color: 'var(--text-muted)' }}>{t('welcome_seller')}</p>
           </div>
           <button 
             onClick={() => setIsAddModalOpen(true)}
@@ -117,7 +117,7 @@ export default function SellerDashboard() {
                  <Package size={24} color="var(--primary)" />
               </div>
               <div>
-                 <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Всего товаров</div>
+                 <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('total_products')}</div>
                  <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>{stats.total}</div>
               </div>
            </div>
@@ -126,23 +126,23 @@ export default function SellerDashboard() {
                  <TrendingUp size={24} color="var(--accent)" />
               </div>
               <div>
-                 <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Общая ценность</div>
+                 <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('total_value')}</div>
                  <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>${stats.stockValue.toLocaleString()}</div>
               </div>
            </div>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '6rem' }}>Загрузка товаров...</div>
+          <div style={{ textAlign: 'center', padding: '6rem' }}>{t('processing')}</div>
         ) : (
           <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                    <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)' }}>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Информация о товаре</th>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Статус</th>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Цена / Склад</th>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Действия</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{t('product_info')}</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{t('status')}</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{t('price_stock')}</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{t('actions')}</th>
                    </tr>
                 </thead>
                 <tbody>
@@ -165,14 +165,14 @@ export default function SellerDashboard() {
                              </span>
                              {p.isPromoted && (
                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent)', fontSize: '0.7rem', fontWeight: 800, marginTop: '0.5rem', textTransform: 'uppercase' }}>
-                                  <Zap size={10} fill="var(--accent)" /> Реклама активна
+                                  <Zap size={10} fill="var(--accent)" /> {t('ad_active')}
                                </div>
                              )}
                           </td>
                           <td style={{ padding: '1.25rem 2rem' }}>
                              <div style={{ fontWeight: 800 }}>${p.price}</div>
                              <div style={{ fontSize: '0.75rem', color: p.stock < 10 ? '#EF4444' : 'var(--text-muted)' }}>
-                                {p.stock} шт. на складе
+                                {t('in_stock_msg', { count: p.stock })}
                              </div>
                           </td>
                           <td style={{ padding: '1.25rem 2rem' }}>
@@ -181,7 +181,7 @@ export default function SellerDashboard() {
                                   onClick={() => setPromoteProduct(p)}
                                   className="glass-card" 
                                   style={{ padding: '0.5rem', color: 'var(--accent)' }}
-                                  title="Заказать рекламу"
+                                  title={t('order_ad')}
                                 >
                                    <Zap size={18} fill={p.isPromoted ? 'currentColor' : 'none'} />
                                 </button>
@@ -208,20 +208,20 @@ export default function SellerDashboard() {
                      <Zap size={24} color="var(--accent)" fill="var(--accent)" />
                   </div>
                   <div>
-                     <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>Продвижение товара</h2>
-                     <p style={{ fontSize: '0.875rem', opacity: 0.6 }}>Ваш товар будет закреплен в топе каталога</p>
+                     <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>{t('promotion_title')}</h2>
+                     <p style={{ fontSize: '0.875rem', opacity: 0.6 }}>{t('promotion_desc')}</p>
                   </div>
                </div>
 
                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-                  <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--text-muted)' }}>Выберите период</label>
+                  <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--text-muted)' }}>{t('select_period')}</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                      <div>
-                        <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>Начало:</span>
+                        <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>{t('start_date')}</span>
                         <input type="date" value={adDates.start} onChange={(e) => setAdDates({ ...adDates, start: e.target.value })} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }} />
                      </div>
                      <div>
-                        <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>Конец:</span>
+                        <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>{t('end_date')}</span>
                         <input type="date" value={adDates.end} onChange={(e) => setAdDates({ ...adDates, end: e.target.value })} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }} />
                      </div>
                   </div>
@@ -229,11 +229,11 @@ export default function SellerDashboard() {
 
                <div style={{ padding: '1.5rem', background: 'rgba(0, 224, 255, 0.05)', borderRadius: '12px', border: '1px solid var(--accent)30', marginBottom: '2rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                     <span style={{ color: 'var(--text-muted)' }}>Тариф:</span>
-                     <span>$100.00 / день</span>
+                     <span style={{ color: 'var(--text-muted)' }}>{t('daily_rate')}</span>
+                     <span>$100.00 / day</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.25rem', fontWeight: 900 }}>
-                     <span>Итого к оплате:</span>
+                     <span>{t('total_to_pay')}</span>
                      <span style={{ color: 'var(--accent)' }}>${calculatePromoPrice()}</span>
                   </div>
                </div>
@@ -244,7 +244,7 @@ export default function SellerDashboard() {
                  className="btn-neon" 
                  style={{ width: '100%', padding: '1rem', background: 'var(--accent)', boxShadow: '0 0 20px rgba(0, 224, 255, 0.4)' }}
                >
-                  {promoSubmitting ? 'Обработка...' : 'Подтвердить и купить'}
+                  {promoSubmitting ? t('processing') : t('confirm_and_buy')}
                </button>
             </div>
           </div>

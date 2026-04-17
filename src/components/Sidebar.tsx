@@ -27,11 +27,11 @@ export function Sidebar() {
   const sellerItems = [
     { label: t('sidebar_products'), path: '/seller', icon: Package },
     { label: t('sidebar_orders'), path: '/seller/orders', icon: ShoppingBag },
-    { label: 'Отзывы', path: '/seller/reviews', icon: MessageSquare },
+    { label: t('sidebar_reviews'), path: '/seller/reviews', icon: MessageSquare },
   ];
 
   const adminItems = [
-    { label: 'Панель админа', path: '/admin', icon: ShieldCheck },
+    { label: t('sidebar_admin_panel'), path: '/admin', icon: ShieldCheck },
   ];
 
   return (
@@ -57,7 +57,7 @@ export function Sidebar() {
 
       <nav style={{ flex: 1 }}>
         <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
-          Главное меню
+          {t('menu_main')}
         </p>
         {commonItems.map((item) => (
           <Link 
@@ -73,7 +73,7 @@ export function Sidebar() {
         {(userRole === 'seller' || userRole === 'admin') && (
           <>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2.5rem', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
-              Инструменты продаж
+              {t('menu_sales')}
             </p>
             {sellerItems.map((item) => (
               <Link 
@@ -91,7 +91,7 @@ export function Sidebar() {
         {userRole === 'admin' && (
           <>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2.5rem', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
-              Администрирование
+              {t('menu_admin')}
             </p>
             {adminItems.map((item) => (
               <Link 
@@ -124,7 +124,7 @@ export function Sidebar() {
           onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
         >
           <LogOut size={18} />
-          Выйти
+          {t('logout')}
         </button>
       </div>
     </aside>

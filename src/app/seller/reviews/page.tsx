@@ -53,14 +53,14 @@ export default function SellerReviews() {
     <ProtectedRoute allowedRoles={['seller', 'admin']}>
       <div style={{ padding: '2rem 0' }}>
         <div style={{ marginBottom: '3rem' }}>
-          <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>Отзывы покупателей</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Обратная связь от ваших клиентов по всем товарам</p>
+          <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('customer_reviews_title')}</h1>
+          <p style={{ color: 'var(--text-muted)' }}>{t('customer_reviews_desc')}</p>
         </div>
 
         {/* Stats Summary */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
            <div className="glass-card" style={{ padding: '2rem' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Средний рейтинг</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{t('avg_rating')}</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#F59E0B' }}>{stats.average}</div>
                  <div style={{ display: 'flex', color: '#F59E0B', marginBottom: '0.5rem' }}>
@@ -69,7 +69,7 @@ export default function SellerReviews() {
               </div>
            </div>
            <div className="glass-card" style={{ padding: '2rem' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Всего отзывов</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{t('total_reviews')}</div>
               <div style={{ fontSize: '2.5rem', fontWeight: 900 }}>{stats.total}</div>
            </div>
         </div>
@@ -83,7 +83,7 @@ export default function SellerReviews() {
                 {/* Product Reference */}
                 <div style={{ borderRight: '1px solid var(--border)', paddingRight: '3rem' }}>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>
-                      <Package size={14} /> Товар
+                      <Package size={14} /> {t('product_label')}
                    </div>
                    {review.product ? (
                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -93,7 +93,7 @@ export default function SellerReviews() {
                         <div style={{ flex: 1 }}>
                            <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.25rem' }}>{review.product.name}</div>
                            <Link href={`/product/${review.productId}`} style={{ fontSize: '0.75rem', color: 'var(--primary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                              Перейти <ArrowUpRight size={12} />
+                              {t('go_to_product')} <ArrowUpRight size={12} />
                            </Link>
                         </div>
                      </div>
@@ -109,7 +109,7 @@ export default function SellerReviews() {
                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <User size={14} />
                          </div>
-                         <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>Клиент {review.clientId.substring(0,8)}</span>
+                         <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>{t('client_label')} {review.clientId.substring(0,8)}</span>
                       </div>
                       <div style={{ display: 'flex', color: '#F59E0B' }}>
                          {[...Array(5)].map((_, i) => <Star key={i} size={16} fill={i < review.rating ? 'currentColor' : 'none'} />)}
@@ -117,7 +117,7 @@ export default function SellerReviews() {
                    </div>
                    <p style={{ fontSize: '1.125rem', lineHeight: 1.6, color: 'white', fontStyle: 'italic' }}>"{review.comment}"</p>
                    <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      Опубликовано: {new Date(review.createdAt).toLocaleDateString()}
+                      {t('published_at')} {new Date(review.createdAt).toLocaleDateString()}
                    </div>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function SellerReviews() {
         ) : (
           <div className="glass-card" style={{ padding: '8rem', textAlign: 'center', borderStyle: 'dashed' }}>
              <Inbox size={48} style={{ opacity: 0.2, marginBottom: '2rem', display: 'block', margin: '0 auto' }} />
-             <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem' }}>Отзывов от покупателей пока нет</p>
+             <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem' }}>{t('no_customer_reviews')}</p>
           </div>
         )}
       </div>

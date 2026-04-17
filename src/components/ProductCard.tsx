@@ -47,31 +47,23 @@ export function ProductCard({ product }: ProductCardProps) {
              <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.125rem' }}>${product.price}</div>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
-             <div style={{ display: 'flex', color: '#F59E0B' }}>
-                <Star size={14} fill="currentColor" />
-             </div>
-             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>4.8 (124 ratings)</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ color: 'var(--primary)', fontSize: '1.25rem', fontWeight: 900 }}>${product.price}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{product.stock} {t('pcs')}</div>
           </div>
-
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', transition: 'opacity 0.3s' }}>
-            {content.description}
-          </p>
+          
+          <button 
+            className="btn-neon" 
+            style={{ width: '100%', padding: '0.75rem', marginTop: '1rem', fontSize: '0.85rem' }}
+            onClick={() => router.push(`/product/${product.id}`)}
+          >
+            {t('view_details')}
+          </button>
         </div>
-      </Link>
-
-      <div style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto' }}>
-         <button 
-           onClick={handleAddToCart}
-           className="btn-neon" 
-           style={{ flex: 1, padding: '0.75rem', fontSize: '0.8rem', background: 'rgba(138, 63, 252, 0.1)', border: '1px solid var(--primary)', color: 'white', boxShadow: 'none' }}
-         >
-            <ShoppingCart size={16} />
-         </button>
-         <Link href={`/product/${product.id}`} className="btn-neon" style={{ flex: 3, padding: '0.75rem', fontSize: '0.8rem', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            Подробнее <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />
-         </Link>
       </div>
+    </Link>
+  );
+}
       
       <div className="chart-line"></div>
     </div>

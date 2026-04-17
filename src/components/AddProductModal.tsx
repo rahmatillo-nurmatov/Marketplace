@@ -127,7 +127,7 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
 
         <div style={{ gridColumn: 'span 2', marginBottom: '1rem' }}>
           <h2 style={{ fontSize: '2rem', fontWeight: 800 }}>{t('add_new_product')}</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Заполните информацию о товаре для размещения в каталоге</p>
+          <p style={{ color: 'var(--text-muted)' }}>{t('fill_product_info')}</p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'contents' }}>
@@ -153,7 +153,7 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
               ) : (
                 <>
                   <Upload size={32} color="var(--primary)" style={{ marginBottom: '1rem' }} />
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Загрузить фото товара</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('upload_photo')}</span>
                 </>
               )}
               <input 
@@ -165,7 +165,7 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
             </div>
 
             <div>
-              <label style={labelStyle}><Palette size={14}/> {t('colors')} (через запятую)</label>
+              <label style={labelStyle}><Palette size={14}/> {t('colors')} {t('comma_separated')}</label>
               <input 
                 placeholder="Black, Red, Silver"
                 value={formData.colors}
@@ -175,7 +175,7 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
             </div>
 
             <div>
-              <label style={labelStyle}><Ruler size={14}/> {t('sizes')} (через запятую)</label>
+              <label style={labelStyle}><Ruler size={14}/> {t('sizes')} {t('comma_separated')}</label>
               <input 
                 placeholder="S, M, L, XL"
                 value={formData.sizes}
@@ -188,13 +188,13 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
           {/* Right Side: Basic Info */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
-              <label style={labelStyle}>Название товара</label>
+              <label style={labelStyle}>{t('product_name')}</label>
               <input 
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 style={inputStyle}
-                placeholder="Например: iPhone 15 Pro Max"
+                placeholder={t('product_name_placeholder')}
               />
             </div>
 
@@ -205,21 +205,21 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 style={{ ...inputStyle, minHeight: '120px', resize: 'none' }}
-                placeholder="Подробное описание характеристик товара..."
+                placeholder={t('description_placeholder')}
               />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
-                <label style={labelStyle}>{t('catalog')} категория</label>
+                <label style={labelStyle}>{t('category_label')}</label>
                 <select 
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   style={inputStyle}
                 >
-                  <option value="electronics">Электроника</option>
-                  <option value="clothes">Одежда</option>
-                  <option value="furniture">Мебель</option>
+                  <option value="electronics">{t('electronics')}</option>
+                  <option value="clothes">{t('clothes')}</option>
+                  <option value="furniture">{t('furniture')}</option>
                 </select>
               </div>
               <div>

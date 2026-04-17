@@ -23,6 +23,8 @@ export interface Product {
   adEndDate?: number;
   createdAt: number;
   updatedAt: number;
+  rating?: number;
+  reviewCount?: number;
   translations?: {
     [langCode: string]: {
       name: string;

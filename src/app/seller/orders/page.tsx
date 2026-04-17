@@ -46,7 +46,7 @@ export default function SellerOrders() {
       fetchOrders();
     } catch (err) {
       console.error(err);
-      alert('Ошибка при обновлении статуса');
+      alert(t('error_occurred'));
     }
   };
 
@@ -92,7 +92,7 @@ export default function SellerOrders() {
             onClick={() => setSelectedOrder(null)}
             style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', fontWeight: 600 }}
           >
-            <ArrowLeft size={18} /> Назад к списку
+            <ArrowLeft size={18} /> {t('back_to_list')}
           </button>
 
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
@@ -101,10 +101,10 @@ export default function SellerOrders() {
                <div style={strictCardStyle}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
                     <div>
-                      <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>Детали заказа #{selectedOrder.id.substring(0,8)}</h2>
+                      <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('order_details_title', { id: selectedOrder.id.substring(0,8) })}</h2>
                       <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={14}/> {new Date(selectedOrder.createdAt).toLocaleString()}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Package size={14}/> {selectedOrder.items.length} товара</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Package size={14}/> {t('items_count', { count: selectedOrder.items.length })}</span>
                       </div>
                     </div>
                     <div style={badgeStyle(selectedOrder.status)}>
@@ -113,7 +113,7 @@ export default function SellerOrders() {
                   </div>
 
                   <div style={{ borderTop: '1px solid #2a2a3c', paddingTop: '1.5rem' }}>
-                     <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', letterSpacing: '1px' }}>Состав заказа</h4>
+                     <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1rem', letterSpacing: '1px' }}>{t('composition_title')}</h4>
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {selectedOrder.items.map((item, idx) => (
                           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: '#1a1a2b', borderRadius: '6px' }}>
@@ -133,20 +133,20 @@ export default function SellerOrders() {
                   </div>
 
                   <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '2px solid #2a2a3c', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <span style={{ fontSize: '1.125rem', fontWeight: 700 }}>Итого к оплате</span>
+                     <span style={{ fontSize: '1.125rem', fontWeight: 700 }}>{t('order_sum')}</span>
                      <span style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--primary)' }}>${selectedOrder.total.toFixed(2)}</span>
                   </div>
                </div>
 
                {/* Timeline */}
                <div style={strictCardStyle}>
-                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '2rem', letterSpacing: '1px' }}>История изменений</h4>
+                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '2rem', letterSpacing: '1px' }}>{t('change_history')}</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', position: 'relative' }}>
                      {[
-                       { status: 'pending', label: 'Заказ оформлен', active: true },
-                       { status: 'processing', label: 'В обработке', active: ['processing', 'shipped', 'delivered'].includes(selectedOrder.status) },
-                       { status: 'shipped', label: 'Отправлен', active: ['shipped', 'delivered'].includes(selectedOrder.status) },
-                       { status: 'delivered', label: 'Доставлен', active: selectedOrder.status === 'delivered' }
+                       { status: 'pending', label: t('order_label'), active: true },
+                       { status: 'processing', label: t('in_processing'), active: ['processing', 'shipped', 'delivered'].includes(selectedOrder.status) },
+                       { status: 'shipped', label: t('status_shipped'), active: ['shipped', 'delivered'].includes(selectedOrder.status) },
+                       { status: 'delivered', label: t('status_delivered'), active: selectedOrder.status === 'delivered' }
                      ].map((step, idx, arr) => (
                        <div key={step.status} style={{ display: 'flex', gap: '1.5rem', position: 'relative' }}>
                           <div style={{ 
@@ -166,7 +166,7 @@ export default function SellerOrders() {
                           )}
                           <div>
                              <div style={{ fontWeight: 700, color: step.active ? 'white' : 'var(--text-muted)' }}>{step.label}</div>
-                             {step.active && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{step.status === selectedOrder.status ? 'Текущий статус' : 'Завершено'}</div>}
+                             {step.active && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{step.status === selectedOrder.status ? t('status_current') : t('status_completed')}</div>}
                           </div>
                        </div>
                      ))}
@@ -177,19 +177,19 @@ export default function SellerOrders() {
             {/* Actions Sidebar */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                <div style={strictCardStyle}>
-                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '1px' }}>Доставка</h4>
+                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '1px' }}>{t('delivery_label')}</h4>
                   <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
                      <MapPin size={20} color="var(--primary)" />
                      <div style={{ fontSize: '0.875rem', lineHeight: 1.5 }}>{selectedOrder.shippingAddress}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)' }}>
                      <User size={18} />
-                     <span style={{ fontSize: '0.875rem' }}>ID Клиента: {selectedOrder.clientId.substring(0,12)}...</span>
+                     <span style={{ fontSize: '0.875rem' }}>{t('client_id_label')} {selectedOrder.clientId.substring(0,12)}...</span>
                   </div>
                </div>
 
                <div style={strictCardStyle}>
-                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '1px' }}>Управление статусом</h4>
+                  <h4 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '1.5rem', letterSpacing: '1px' }}>{t('status_management')}</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
                      {['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(status => (
                         <button
@@ -230,31 +230,31 @@ export default function SellerOrders() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
           <div>
             <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('sidebar_orders')}</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Центр управления всеми заказами пользователей</p>
+            <p style={{ color: 'var(--text-muted)' }}>{t('orders_management_desc')}</p>
           </div>
           <button 
             onClick={fetchOrders}
             className="glass-card" 
             style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600 }}
           >
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} /> Обновить БД
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} /> {t('update_db')}
           </button>
         </div>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '6rem' }}>
-             <div style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Синхронизация с базой данных...</div>
+             <div style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>{t('database_sync_msg')}</div>
           </div>
         ) : orders.length > 0 ? (
           <div className="glass-card" style={{ padding: 0, overflow: 'hidden', border: '1px solid #2a2a3c' }}>
              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                    <tr style={{ background: '#12121e', borderBottom: '1px solid #2a2a3c' }}>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Заказ</th>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Дата</th>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Статус</th>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Товары</th>
-                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Сумма</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>{t('order_label')}</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>{t('date_label')}</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>{t('status')}</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>{t('items_label')}</th>
+                      <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>{t('order_sum')}</th>
                       <th style={{ padding: '1.25rem 2rem' }}></th>
                    </tr>
                 </thead>
@@ -275,7 +275,7 @@ export default function SellerOrders() {
                         <td style={{ padding: '1.25rem 2rem' }}>
                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               <Package size={14} color="var(--text-muted)" />
-                              <span style={{ fontSize: '0.875rem' }}>{order.items.length} поз.</span>
+                              <span style={{ fontSize: '0.875rem' }}>{t('variation_count', { count: order.items.length })}</span>
                            </div>
                         </td>
                         <td style={{ padding: '1.25rem 2rem', fontWeight: 800 }}>${order.total.toFixed(2)}</td>
@@ -285,7 +285,7 @@ export default function SellerOrders() {
                              className="glass-card" 
                              style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                            >
-                             Детали <ChevronRight size={14} />
+                             {t('details')} <ChevronRight size={14} />
                            </button>
                         </td>
                      </tr>
@@ -296,7 +296,7 @@ export default function SellerOrders() {
         ) : (
           <div className="glass-card" style={{ padding: '8rem', textAlign: 'center', borderStyle: 'dashed' }}>
             <ShoppingBag size={48} style={{ opacity: 0.2, marginBottom: '2rem', display: 'block', margin: '0 auto' }} />
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>Реальных заказов в базе данных пока нет</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>{t('no_orders_msg')}</p>
           </div>
         )}
       </div>

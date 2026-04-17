@@ -6,7 +6,7 @@ import { Language, translations } from '../lib/i18n/translations';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: keyof typeof translations['en']) => string;
+  t: (key: keyof typeof translations['en'], variables?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
@@ -32,8 +32,16 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
     localStorage.setItem('language', lang);
   };
 
-  const t = (key: keyof typeof translations['en']): string => {
-    return translations[language][key] || translations['en'][key] || key;
+  const t = (key: keyof typeof translations['en'], variables?: Record<string, string | number>): string => {
+    let text = translations[language][key] || translations['en'][key] || key;
+    
+    if (variables) {
+      Object.entries(variables).forEach(([vKey, vValue]) => {
+        text = text.replace(`{${vKey}}`, vValue.toString());
+      });
+    }
+    
+    return text;
   };
 
   return (

@@ -43,7 +43,7 @@ export default function CheckoutPage() {
     setError(null);
     try {
       if (!user?.uid) throw new Error('User not authenticated');
-      if (!finalAddress) throw new Error('Пожалуйста, укажите адрес доставки');
+      if (!finalAddress) throw new Error(t('select_shipping_address'));
 
       // 1. Check & Decrement Stock for all items (using transactions)
       // Note: In a production app, this should be a single batch or cloud function.
@@ -74,7 +74,7 @@ export default function CheckoutPage() {
       setStep('success');
     } catch(err: any) {
       console.error(err);
-      setError(err.message || 'Ошибка при оформлении заказа');
+      setError(err.message || t('processing'));
     } finally {
       setLoading(false);
     }
@@ -96,11 +96,11 @@ export default function CheckoutPage() {
         }}>
           <CheckCircle size={48} color="#10B981" />
         </div>
-        <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1rem' }}>Заказ оформлен!</h1>
+        <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1rem' }}>{t('checkout_success_title')}</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', marginBottom: '3rem' }}>
-          Спасибо за покупку. Продавец уже уведомлен и приступил к обработке вашего заказа.
+          {t('checkout_success_desc')}
         </p>
-        <button className="btn-neon" onClick={() => router.push('/history')}>Посмотреть в истории</button>
+        <button className="btn-neon" onClick={() => router.push('/history')}>{t('view_in_history')}</button>
       </div>
     );
   }
@@ -108,9 +108,9 @@ export default function CheckoutPage() {
   const StepIndicator = () => (
     <div style={{ display: 'flex', gap: '3rem', justifyContent: 'center', marginBottom: '4rem' }}>
       {[
-        { id: 'address', label: 'Адрес' },
-        { id: 'billing', label: 'Оплата' },
-        { id: 'review', label: 'Проверка' }
+        { id: 'address', label: t('checkout_address') },
+        { id: 'billing', label: t('checkout_billing') },
+        { id: 'review', label: t('checkout_review') }
       ].map((s, idx) => (
         <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', opacity: step === s.id ? 1 : 0.4 }}>
            <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem' }}>
@@ -125,7 +125,7 @@ export default function CheckoutPage() {
   return (
     <ProtectedRoute>
       <div style={{ padding: '2rem 0', maxWidth: '1000px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '1rem', textAlign: 'center' }}>Оформление</h1>
+        <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '1rem', textAlign: 'center' }}>{t('checkout_title')}</h1>
         <StepIndicator />
 
         {error && (
@@ -142,7 +142,7 @@ export default function CheckoutPage() {
             {step === 'address' && (
               <div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                   <MapPin size={24} color="var(--primary)" /> Выберите адрес доставки
+                   <MapPin size={24} color="var(--primary)" /> {t('select_shipping_address')}
                 </h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
@@ -161,7 +161,7 @@ export default function CheckoutPage() {
                          transition: 'all 0.2s'
                        }}
                      >
-                        <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Адрес #{idx + 1}</div>
+                        <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>{t('address_item', { count: idx + 1 })}</div>
                         <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{addr}</div>
                      </button>
                    ))}
@@ -182,12 +182,12 @@ export default function CheckoutPage() {
                      }}
                    >
                       <Plus size={20} color="var(--primary)" />
-                      <span style={{ fontWeight: 700 }}>Использовать новый адрес</span>
+                      <span style={{ fontWeight: 700 }}>{t('use_new_address')}</span>
                    </button>
 
                    {isNewAddress && (
                      <textarea 
-                       placeholder="Введите полный адрес доставки..."
+                       placeholder={t('enter_full_address')}
                        value={customAddress}
                        onChange={(e) => setCustomAddress(e.target.value)}
                        style={{ width: '100%', padding: '1.25rem', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--primary)', color: 'white', marginTop: '1rem', minHeight: '120px', resize: 'none', outline: 'none' }}
@@ -201,7 +201,7 @@ export default function CheckoutPage() {
                   style={{ width: '100%', padding: '1.25rem' }}
                   onClick={() => setStep('billing')}
                 >
-                  Далее к оплате <ArrowRight size={20} style={{ marginLeft: '0.75rem' }} />
+                  {t('next_to_billing')} <ArrowRight size={20} style={{ marginLeft: '0.75rem' }} />
                 </button>
               </div>
             )}
@@ -209,7 +209,7 @@ export default function CheckoutPage() {
             {step === 'billing' && (
               <div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                   <CreditCard size={24} color="var(--accent)" /> Банковская карта (Demo)
+                   <CreditCard size={24} color="var(--accent)" /> {t('bank_card_demo')}
                 </h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2.5rem' }}>
@@ -228,55 +228,55 @@ export default function CheckoutPage() {
                       </div>
                    </div>
                    <input 
-                     placeholder="Имя на карте"
+                     placeholder={t('card_name_placeholder')}
                      style={{ width: '100%', padding: '1rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '12px', color: 'white' }}
                    />
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                   <button className="glass-card" style={{ flex: 1, padding: '1.25rem', fontWeight: 700 }} onClick={() => setStep('address')}>Назад</button>
-                   <button className="btn-neon" style={{ flex: 2, padding: '1.25rem', background: 'var(--accent)', boxShadow: '0 0 20px rgba(0, 224, 255, 0.4)' }} onClick={() => setStep('review')}>Проверить заказ</button>
+                   <button className="glass-card" style={{ flex: 1, padding: '1.25rem', fontWeight: 700 }} onClick={() => setStep('address')}>{t('back_btn')}</button>
+                   <button className="btn-neon" style={{ flex: 2, padding: '1.25rem', background: 'var(--accent)', boxShadow: '0 0 20px rgba(0, 224, 255, 0.4)' }} onClick={() => setStep('review')}>{t('check_order_btn')}</button>
                 </div>
               </div>
             )}
 
             {step === 'review' && (
               <div>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2.5rem' }}>Подтверждение</h3>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '2.5rem' }}>{t('confirmation_title')}</h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '3rem' }}>
                    <div style={{ display: 'flex', gap: '1rem' }}>
                       <MapPin size={20} color="var(--primary)" />
                       <div>
-                         <div style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Доставка в:</div>
+                         <div style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('shipping_to')}</div>
                          <div style={{ fontSize: '1rem' }}>{finalAddress}</div>
                       </div>
                    </div>
                    <div style={{ display: 'flex', gap: '1rem' }}>
                       <CreditCard size={20} color="var(--accent)" />
                       <div>
-                         <div style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Оплата:</div>
+                         <div style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('payment_label')}</div>
                          <div style={{ fontSize: '1rem' }}>Visa •••• 4242</div>
                       </div>
                    </div>
                    <div style={{ display: 'flex', gap: '1rem' }}>
                       <ShieldCheck size={20} color="#10B981" />
                       <div>
-                         <div style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Гарантия:</div>
-                         <div style={{ fontSize: '1rem' }}>Безопасная сделка включена</div>
+                         <div style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('guarantee_label')}</div>
+                         <div style={{ fontSize: '1rem' }}>{t('secure_deal_enabled')}</div>
                       </div>
                    </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                   <button className="glass-card" style={{ flex: 1, padding: '1.25rem', fontWeight: 700 }} onClick={() => setStep('billing')}>Назад</button>
+                   <button className="glass-card" style={{ flex: 1, padding: '1.25rem', fontWeight: 700 }} onClick={() => setStep('billing')}>{t('back_btn')}</button>
                    <button 
                      disabled={loading}
                      className="btn-neon" 
                      style={{ flex: 2, padding: '1.25rem' }} 
                      onClick={handleProcessOrder}
                    >
-                     {loading ? 'Обработка...' : 'Подтвердить и оплатить $' + total.toFixed(2)}
+                     {loading ? t('processing') : t('confirm_and_pay') + ' $' + total.toFixed(2)}
                    </button>
                 </div>
               </div>
@@ -288,7 +288,7 @@ export default function CheckoutPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div className="glass-card" style={{ padding: '2rem' }}>
                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Package size={18} /> Состав заказа
+                  <Package size={18} /> {t('order_summary_title')}
                </h3>
                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {items.map(item => (
@@ -298,7 +298,7 @@ export default function CheckoutPage() {
                     </div>
                   ))}
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontSize: '1.25rem', fontWeight: 900 }}>
-                     <span>Итого</span>
+                     <span>{t('total_label')}</span>
                      <span style={{ color: 'var(--primary)' }}>${total.toFixed(2)}</span>
                   </div>
                </div>
@@ -306,7 +306,7 @@ export default function CheckoutPage() {
 
             <div style={{ padding: '1.5rem', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '12px', fontSize: '0.8rem', color: '#10B981', display: 'flex', gap: '1rem' }}>
                <ShieldCheck size={18} />
-               <span>Ваши средства будут заморожены до подтверждения получения товара.</span>
+               <span>{t('funds_frozen_notice')}</span>
             </div>
           </div>
         </div>

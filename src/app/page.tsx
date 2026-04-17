@@ -138,7 +138,7 @@ function HomeContent() {
             <div style={{ position: 'relative', zIndex: 2, maxWidth: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)', marginBottom: '1rem' }}>
                 <Star size={16} fill="var(--accent)" />
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>Trending Now</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>{t('trending_now')}</span>
               </div>
               <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1rem', lineHeight: 1 }}>{slide.title}</h1>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.25rem', marginBottom: '2rem' }}>{slide.desc}</p>
@@ -256,7 +256,7 @@ function HomeContent() {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2rem', fontWeight: 900 }}>{t('catalog')}</h2>
-        <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: 600 }}>Найдено: {filteredProducts.length} товаров</span>
+        <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('found_products', { count: filteredProducts.length })}</span>
       </div>
 
       {loading ? (
@@ -279,13 +279,14 @@ function HomeContent() {
           <div style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.03)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
              <Search size={32} style={{ opacity: 0.2 }} />
           </div>
+          </div>
           <h3 style={{ fontSize: '1.75rem', marginBottom: '0.5rem', fontWeight: 800 }}>{t('no_products')}</h3>
-          <p style={{ color: 'var(--text-muted)' }}>Попробуйте изменить параметры поиска или фильтры</p>
+          <p style={{ color: 'var(--text-muted)' }}>{t('no_products_filter_desc')}</p>
           <button 
             onClick={() => { setSearchQuery(''); handleCategoryChange('all'); setPriceRange({ min: 0, max: 10000 }); }} 
             style={{ marginTop: '2rem', background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 800, cursor: 'pointer', textDecoration: 'underline' }}
           >
-             Сбросить все фильтры
+             {t('reset_filters')}
           </button>
         </div>
       )}

@@ -35,7 +35,7 @@ export default function HistoryPage() {
 
   const formatTime = (ms: number) => {
     const d = new Date(ms);
-    return `${d.toLocaleDateString()} в ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+    return `${d.toLocaleDateString()} ${t('at')} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
   };
 
   return (
@@ -59,7 +59,7 @@ export default function HistoryPage() {
                       <Package size={24} color="var(--primary)" />
                     </div>
                     <div>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Заказ</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('order_label')}</p>
                       <p style={{ fontWeight: 800, fontSize: '1.125rem' }}>#{order.id.substring(0, 8)}</p>
                     </div>
                   </div>
@@ -69,7 +69,7 @@ export default function HistoryPage() {
                       <Calendar size={18} color="var(--text-muted)" />
                     </div>
                     <div>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Дата и Время</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('date_and_time')}</p>
                       <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{formatTime(order.createdAt)}</p>
                     </div>
                   </div>
@@ -80,7 +80,13 @@ export default function HistoryPage() {
                     </div>
                     <div>
                       <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('status')}</p>
-                      <p style={{ fontWeight: 800, color: '#10B981', textTransform: 'capitalize' }}>{order.status === 'pending' ? 'В обработке' : order.status}</p>
+                      <p style={{ fontWeight: 800, color: '#10B981', textTransform: 'capitalize' }}>
+                        {order.status === 'pending' ? t('in_processing') : 
+                         order.status === 'shipped' ? t('status_shipped') : 
+                         order.status === 'delivered' ? t('status_delivered') : 
+                         order.status === 'cancelled' ? t('status_cancelled') : 
+                         order.status}
+                      </p>
                     </div>
                   </div>
 
@@ -104,19 +110,19 @@ export default function HistoryPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem' }}>
                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
                           <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
-                             <MapPin size={18} /> Адрес доставки
+                             <MapPin size={18} /> {t('shipping_address')}
                           </h4>
                           <p style={{ fontSize: '1.1rem', fontWeight: 500, lineHeight: 1.5 }}>
-                            {order.shippingAddress || 'Адрес не указан'}
+                            {order.shippingAddress || t('no_cards')}
                           </p>
                        </div>
                        
                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
                           <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
-                             <CreditCard size={18} /> Метод оплаты
+                             <CreditCard size={18} /> {t('payment_methods')}
                           </h4>
                           <p style={{ fontSize: '1.1rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            {order.paymentMethod || 'Безопасная сделка'} 
+                            {order.paymentMethod || t('secure_deal_enabled')} 
                             <span style={{ padding: '4px 8px', background: 'var(--border)', borderRadius: '6px', fontSize: '0.85rem', letterSpacing: '2px' }}>
                               •••• {order.cardLast4 || 'XXXX'}
                             </span>
@@ -125,7 +131,7 @@ export default function HistoryPage() {
                     </div>
 
                     {/* Order Items List */}
-                    <h4 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', paddingLeft: '0.5rem' }}>Состав заказа</h4>
+                    <h4 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', paddingLeft: '0.5rem' }}>{t('composition_title')}</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       {order.items.map((item, idx) => (
                         <div key={idx} style={{ 
@@ -150,12 +156,12 @@ export default function HistoryPage() {
                           {/* Item Name & Details */}
                           <div>
                              <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{item.name}</p>
-                             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Артикул: {item.productId.substring(0,8)}</p>
+                             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('sku_label')} {item.productId.substring(0,8)}</p>
                           </div>
 
                           {/* Seller */}
                           <div>
-                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Продавец</p>
+                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('seller_label')}</p>
                              <p style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                <User size={14} /> {item.sellerId || 'System'}
                              </p>
@@ -163,13 +169,13 @@ export default function HistoryPage() {
 
                           {/* Quantity */}
                           <div>
-                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Количество</p>
-                             <p style={{ fontWeight: 800 }}>{item.quantity} шт.</p>
+                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('quantity')}</p>
+                             <p style={{ fontWeight: 800 }}>{item.quantity} {t('pcs')}</p>
                           </div>
 
                           {/* Price */}
                           <div style={{ textAlign: 'right' }}>
-                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Сумма</p>
+                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('order_sum')}</p>
                              <p style={{ fontWeight: 800, fontSize: '1.1rem' }}>${(item.price * item.quantity).toFixed(2)}</p>
                           </div>
                         </div>
@@ -184,8 +190,8 @@ export default function HistoryPage() {
         ) : (
           <div className="glass-card" style={{ padding: '6rem', textAlign: 'center', borderStyle: 'dashed' }}>
              <Package size={64} style={{ opacity: 0.2, marginBottom: '1.5rem', display: 'block', margin: '0 auto' }} />
-             <p style={{ color: 'var(--text-muted)', fontSize: '1.5rem', fontWeight: 700 }}>Здесь пока пусто</p>
-             <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Вы еще ничего не заказывали.</p>
+             <p style={{ color: 'var(--text-muted)', fontSize: '1.5rem', fontWeight: 700 }}>{t('empty_history_title')}</p>
+             <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>{t('empty_history_desc')}</p>
              <button className="btn-neon" onClick={() => window.location.href = '/'}>{t('sidebar_home')}</button>
           </div>
         )}

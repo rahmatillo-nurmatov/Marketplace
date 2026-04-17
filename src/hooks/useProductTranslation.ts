@@ -19,9 +19,12 @@ export function useProductTranslation(product: Product | null) {
   useEffect(() => {
     if (!product) return;
 
-    if (language === 'ru') {
-      if (product.translations?.['ru']) {
-        setContent(product.translations['ru']);
+    const originalLang = product.id.toString().startsWith('mock-') ? 'en' : 'ru';
+
+    // If the requested language matches the product's original language, show original content
+    if (language === originalLang) {
+      if (product.translations?.[language]) {
+        setContent(product.translations[language]);
       } else {
         setContent({ name: product.name, description: product.description });
       }

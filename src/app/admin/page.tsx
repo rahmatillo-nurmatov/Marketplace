@@ -39,7 +39,7 @@ export default function AdminDashboard() {
       await productService.updateProductStatus(id, status);
       setPendingProducts(prev => prev.filter(p => p.id !== id));
     } catch (err) {
-      alert('Ошибка при обновлении статуса');
+      alert(t('error_occurred'));
     }
   };
 
@@ -48,20 +48,20 @@ export default function AdminDashboard() {
       <div style={{ padding: '2rem 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
           <div>
-            <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>Центр Модерации</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Рассмотрение заявок на публикацию и продвижение товаров</p>
+            <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('moderation_center')}</h1>
+            <p style={{ color: 'var(--text-muted)' }}>{t('moderation_desc')}</p>
           </div>
           <button 
             onClick={fetchPending}
             className="glass-card" 
             style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600 }}
           >
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} /> Обновить
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} /> {t('update_btn')}
           </button>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '6rem' }}>Загрузка...</div>
+          <div style={{ textAlign: 'center', padding: '6rem' }}>{t('processing')}</div>
         ) : pendingProducts.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
             {pendingProducts.map(product => (
@@ -74,16 +74,16 @@ export default function AdminDashboard() {
                 <div>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>
                       <Clock size={14} />
-                      <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Ожидает проверки</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>{t('waiting_review')}</span>
                    </div>
                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem' }}>{product.name}</h3>
                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <span>Цена: ${product.price}</span>
-                      <span>Продавец: {product.sellerId.substring(0,8)}...</span>
+                      <span>{t('price_label')}: ${product.price}</span>
+                      <span>{t('seller_label')}: {product.sellerId.substring(0,8)}...</span>
                    </div>
                    {product.isPromoted && (
                      <div style={{ marginTop: '0.75rem', padding: '0.4rem 0.8rem', background: 'rgba(0, 224, 255, 0.1)', border: '1px solid var(--accent)', color: 'var(--accent)', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, display: 'inline-block', textTransform: 'uppercase' }}>
-                        Заявка на продвижение
+                        {t('promotion_title')}
                      </div>
                    )}
                 </div>
@@ -97,14 +97,14 @@ export default function AdminDashboard() {
                      className="glass-card" 
                      style={{ padding: '0.75rem 1.5rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #EF4444', color: '#EF4444', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
                    >
-                     <XCircle size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} /> Отклонить
+                     <XCircle size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} /> {t('reject')}
                    </button>
                    <button 
                      onClick={() => handleAction(product.id, 'approved')}
                      className="btn-neon" 
                      style={{ padding: '0.75rem 1.5rem', background: '#10B981', color: 'white', borderRadius: '8px', boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)' }}
                    >
-                     <CheckCircle size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} /> Одобрить
+                     <CheckCircle size={18} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} /> {t('approve')}
                    </button>
                 </div>
               </div>
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
         ) : (
           <div className="glass-card" style={{ padding: '8rem', textAlign: 'center', borderStyle: 'dashed' }}>
              <ShieldCheck size={48} style={{ opacity: 0.2, marginBottom: '2rem', display: 'block', margin: '0 auto' }} />
-             <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>Новых заявок на модерацию пока нет</p>
+             <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem' }}>{t('no_pending_products')}</p>
           </div>
         )}
       </div>

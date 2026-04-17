@@ -107,7 +107,7 @@ export default function ProductDetailsPage() {
   if (loading) return <div style={{ padding: '10rem', textAlign: 'center', color: 'var(--text-muted)' }}>{t('processing')}</div>;
   if (!product) return (
     <div style={{ padding: '10rem', textAlign: 'center' }}>
-      <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Товар не найден</h2>
+      <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>{t('product_not_found')}</h2>
       <button onClick={() => router.back()} className="btn-neon">{t('back')}</button>
     </div>
   );
@@ -177,21 +177,21 @@ export default function ProductDetailsPage() {
              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary)' }}>${product.price.toFixed(2)}</div>
              <div style={{ textAlign: 'right' }}>
                <div style={{ fontWeight: 800, color: product.stock > 0 ? '#10B981' : '#EF4444', marginBottom: '0.25rem' }}>
-                 {product.stock > 0 ? `В наличии: ${product.stock} шт.` : 'Нет в наличии'}
+                 {product.stock > 0 ? t('in_stock_count', { count: product.stock }) : t('out_of_stock')}
                </div>
-               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Продавец: {product.sellerId}</div>
+               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('seller_label')}: {product.sellerId}</div>
              </div>
            </div>
 
            <div className="glass-card" style={{ padding: '2rem' }}>
-             <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 700 }}>Характеристики и описание</h3>
+             <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 700 }}>{t('specs_and_description')}</h3>
              <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', lineHeight: 1.8, transition: 'opacity 0.3s' }}>{translatedContent.description}</p>
              <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                 <Calendar size={16} /> Добавлено: {new Date(product.createdAt).toLocaleDateString()}
+                 <Calendar size={16} /> {t('added_on')}: {new Date(product.createdAt).toLocaleDateString()}
                </span>
                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                 <Box size={16} /> Статус: {product.status === 'approved' ? 'Одобрено' : 'На проверке'}
+                 <Box size={16} /> {t('status_label')}: {product.status === 'approved' ? t('approved') : t('on_review')}
                </span>
              </div>
            </div>
@@ -240,18 +240,18 @@ export default function ProductDetailsPage() {
                 style={{ flex: 1, padding: '1.5rem', fontSize: '1.125rem', opacity: product.stock <= 0 ? 0.5 : 1 }}
               >
                 <ShoppingCart size={20} style={{ marginRight: '0.75rem' }} /> 
-                {product.stock > 0 ? t('add_to_cart') : 'Нет в наличии'}
+                {product.stock > 0 ? t('add_to_cart') : t('out_of_stock')}
               </button>
            </div>
 
            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1rem' }}>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                  <ShieldCheck size={20} color="#10B981" />
-                 <span>Гарантия безопасности платформы</span>
+                 <span>{t('security_guarantee')}</span>
               </div>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                  <Truck size={20} color="var(--primary)" />
-                 <span>Экспресс доставка от продавца</span>
+                 <span>{t('express_delivery')}</span>
               </div>
            </div>
         </div>
@@ -265,7 +265,7 @@ export default function ProductDetailsPage() {
 
          {user && hasBought ? (
            <form onSubmit={handleAddReview} className="glass-card" style={{ padding: '2rem', marginBottom: '4rem' }}>
-              <h4 style={{ marginBottom: '1.5rem', fontWeight: 700 }}>Оставить отзыв</h4>
+              <h4 style={{ marginBottom: '1.5rem', fontWeight: 700 }}>{t('leave_review')}</h4>
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
                  {[1, 2, 3, 4, 5].map(star => (
                    <button key={star} type="button" onClick={() => setNewRating(star)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: star <= newRating ? '#F59E0B' : 'var(--border)' }}>
@@ -277,23 +277,23 @@ export default function ProductDetailsPage() {
                 required
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Расскажите о ваших впечатлениях от покупки..."
+                placeholder={t('review_placeholder')}
                 style={{ width: '100%', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '12px', color: 'white', minHeight: '120px', resize: 'none', outline: 'none', marginBottom: '1.5rem' }}
               />
               <button disabled={submittingReview} type="submit" className="btn-neon" style={{ padding: '0.75rem 2rem' }}>
-                {submittingReview ? 'Отправка...' : 'Опубликовать'}
+                {submittingReview ? t('sending') : t('publish')}
               </button>
            </form>
          ) : user ? (
            <div className="glass-card" style={{ padding: '2rem', marginBottom: '4rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid rgba(138, 63, 252, 0.3)', background: 'rgba(138, 63, 252, 0.05)' }}>
               <ShieldCheck size={24} color="var(--primary)" />
               <div style={{ fontSize: '0.9rem' }}>
-                 Отзывы могут оставлять только проверенные покупатели, которые приобрели данный товар.
+                 {t('verified_purchase_only')}
               </div>
            </div>
          ) : (
            <div className="glass-card" style={{ padding: '2.5rem', marginBottom: '4rem', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-muted)' }}>Войдите в аккаунт, чтобы оставить отзыв</p>
+              <p style={{ color: 'var(--text-muted)' }}>{t('login_to_review')}</p>
            </div>
          )}
 
@@ -316,7 +316,7 @@ export default function ProductDetailsPage() {
               </div>
             )) : (
               <div style={{ textAlign: 'center', padding: '4rem', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
-                 Отзывов пока нет. Будьте первым!
+                 {t('no_reviews_yet')}
               </div>
             )}
          </div>
