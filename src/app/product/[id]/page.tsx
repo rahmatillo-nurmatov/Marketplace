@@ -38,20 +38,35 @@ export default function ProductDetailsPage() {
     if (id) {
       setLoading(true);
       const decodedId = decodeURIComponent(id as string);
+      const fetchProductData = async () => {
+        try {
+          const p = await productService.getProductById(decodedId);
+          setProduct(p);
+          
+          if (p) {
+            if (p.colors?.[0]) setSelectedColor(p.colors[0]);
+            if (p.sizes?.[0]) setSelectedSize(p.sizes[0]);
+            
+            // Fetch reviews independently
+            reviewService.getReviewsByProduct(decodedId)
+              .then(setReviews)
+              .catch(err => console.error("Error fetching reviews:", err));
+              
+            // Fetch order history independently
+            if (user) {
+              orderService.checkIfUserBoughtProduct(user.uid, decodedId)
+                .then(setHasBought)
+                .catch(err => console.error("Error checking order history:", err));
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching product:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
       
-      Promise.all([
-        productService.getProductById(decodedId),
-        reviewService.getReviewsByProduct(decodedId),
-        user ? orderService.checkIfUserBoughtProduct(user.uid, decodedId) : Promise.resolve(false)
-      ]).then(([p, r, bought]) => {
-        setProduct(p);
-        setReviews(r);
-        setHasBought(bought);
-        if (p?.colors?.[0]) setSelectedColor(p.colors[0]);
-        if (p?.sizes?.[0]) setSelectedSize(p.sizes[0]);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      fetchProductData();
     }
   }, [id, user]);
 

@@ -18,13 +18,18 @@ const COLLECTION_NAME = 'products';
 
 export const productService = {
   async getProducts(): Promise<Product[]> {
-    const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-    const firestoreProducts = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Product));
+    try {
+      const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+      const firestoreProducts = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Product));
 
-    return firestoreProducts.length > 0 ? firestoreProducts : MOCK_PRODUCTS;
+      return firestoreProducts.length > 0 ? firestoreProducts : MOCK_PRODUCTS;
+    } catch (err) {
+      console.error("Firestore getProducts error, falling back to mock:", err);
+      return MOCK_PRODUCTS;
+    }
   },
 
   async getProductById(id: string | string[]): Promise<Product | null> {
