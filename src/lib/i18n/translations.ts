@@ -60,7 +60,6 @@ export const translations = {
     order_management_desc: "View and manage your customer orders",
     order: "Order",
     details: "Details",
-    delete_confirm: "Are you sure you want to delete this item?",
     shipping_address: "Shipping Address",
     address_placeholder: "Enter full address (City, street, house, apt)...",
     security_notice: "Your data is protected by end-to-end encryption.",
@@ -285,16 +284,8 @@ export const translations = {
     product_name_placeholder: "e.g.: iPhone 15 Pro Max",
     description_placeholder: "Detailed description of product features...",
     category_label: "Category",
-    electronics: "Electronics",
-    clothes: "Clothes",
-    furniture: "Furniture",
-    edit_product: "Edit Product",
-    save_changes: "Save Changes",
-    address_placeholder: "Enter full delivery address...",
     card_number_placeholder: "Card Number",
     orders_count: "Orders",
-    no_reviews_yet: "No reviews yet. Be the first!",
-    pcs: "pcs.",
     at: "at",
     // New keys
     error_occurred: "An error occurred. Please try again.",
@@ -302,13 +293,7 @@ export const translations = {
     price_label: "Price",
     status_cancelled: "Cancelled",
     status_shipped: "Shipped",
-    status_delivered: "Delivered",
-    in_stock_count: "{count} in stock",
-    sku_label: "SKU:",
-    date_and_time: "Date & Time",
-    add_to_cart_success: "Product added to cart!",
-    composition_title: "Order Composition",
-    order_sum: "Order Total"
+    status_delivered: "Delivered"
   },
   ru: {
     catalog: "Каталог",
@@ -369,7 +354,6 @@ export const translations = {
     order_management_desc: "Просмотр и управление заказами ваших покупателей",
     order: "Заказ",
     details: "Детали",
-    delete_confirm: "Вы уверены, что хотите удалить этот товар?",
     shipping_address: "Адрес доставки",
     address_placeholder: "Введите полный адрес (Город, улица, дом, кв)...",
     security_notice: "Ваши данные защищены сквозным шифрованием.",
@@ -594,16 +578,8 @@ export const translations = {
     product_name_placeholder: "Например: iPhone 15 Pro Max",
     description_placeholder: "Подробное описание характеристик товара...",
     category_label: "Категория",
-    electronics: "Электроника",
-    clothes: "Одежда",
-    furniture: "Мебель",
-    edit_product: "Редактировать товар",
-    save_changes: "Сохранить изменения",
-    address_placeholder: "Введите полный адрес доставки...",
     card_number_placeholder: "Номер карты",
     orders_count: "Заказов",
-    no_reviews_yet: "Отзывов пока нет. Будьте первым!",
-    pcs: "шт.",
     at: "в",
     // Новые ключи
     error_occurred: "Произошла ошибка. Попробуйте ещё раз.",
@@ -611,12 +587,6 @@ export const translations = {
     price_label: "Цена",
     status_cancelled: "Отменён",
     status_shipped: "Отправлен",
-    status_delivered: "Доставлен",
-    in_stock_count: "{count} в наличии",
-    sku_label: "Арт.:",
-    date_and_time: "Дата и время",
-    add_to_cart_success: "Товар добавлен в корзину!",
-    composition_title: "Состав заказа",
-    order_sum: "Итого к оплате"
+    status_delivered: "Доставлен"
   }
 };
