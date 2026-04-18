@@ -6,7 +6,6 @@ import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
-import { ShoppingCart, Star, ArrowRight } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -27,45 +26,39 @@ export function ProductCard({ product }: ProductCardProps) {
     <div className="glass-card product-card-cyber" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Link href={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.25rem' }}>
-          <img 
-            src={product.images[0]} 
-            alt={content.name} 
+          <img
+            src={product.images[0]}
+            alt={content.name}
             style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
             onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
             onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
           />
           <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, color: 'var(--primary)', border: '1px solid rgba(138, 63, 252, 0.3)' }}>
-             -{Math.round(((product.cost || 100) / product.price) * 10)}%
+            -{Math.round(((product.cost || 100) / product.price) * 10)}%
           </div>
         </div>
 
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', transition: 'opacity 0.3s' }}>
-                {content.name}
-             </h3>
-             <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.125rem' }}>${product.price}</div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', transition: 'opacity 0.3s', flex: 1, marginRight: '0.5rem' }}>
+              {content.name}
+            </h3>
+            <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.125rem', whiteSpace: 'nowrap' }}>${product.price}</div>
           </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ color: 'var(--primary)', fontSize: '1.25rem', fontWeight: 900 }}>${product.price}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{product.stock} {t('pcs')}</div>
+
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+            {product.stock} {t('pcs')}
           </div>
-          
-          <button 
-            className="btn-neon" 
-            style={{ width: '100%', padding: '0.75rem', marginTop: '1rem', fontSize: '0.85rem' }}
-            onClick={() => router.push(`/product/${product.id}`)}
+
+          <button
+            className="btn-neon"
+            style={{ width: '100%', padding: '0.75rem', marginTop: 'auto', fontSize: '0.85rem' }}
+            onClick={handleAddToCart}
           >
-            {t('view_details')}
+            {t('add_to_cart')}
           </button>
         </div>
-      </div>
-    </Link>
-  );
-}
-      
-      <div className="chart-line"></div>
+      </Link>
     </div>
   );
 }

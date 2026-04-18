@@ -295,7 +295,20 @@ export const translations = {
     orders_count: "Orders",
     no_reviews_yet: "No reviews yet. Be the first!",
     pcs: "pcs.",
-    at: "at"
+    at: "at",
+    // New keys
+    error_occurred: "An error occurred. Please try again.",
+    update_btn: "Refresh",
+    price_label: "Price",
+    status_cancelled: "Cancelled",
+    status_shipped: "Shipped",
+    status_delivered: "Delivered",
+    in_stock_count: "{count} in stock",
+    sku_label: "SKU:",
+    date_and_time: "Date & Time",
+    add_to_cart_success: "Product added to cart!",
+    composition_title: "Order Composition",
+    order_sum: "Order Total"
   },
   ru: {
     catalog: "Каталог",
@@ -591,6 +604,19 @@ export const translations = {
     orders_count: "Заказов",
     no_reviews_yet: "Отзывов пока нет. Будьте первым!",
     pcs: "шт.",
-    at: "в"
+    at: "в",
+    // Новые ключи
+    error_occurred: "Произошла ошибка. Попробуйте ещё раз.",
+    update_btn: "Обновить",
+    price_label: "Цена",
+    status_cancelled: "Отменён",
+    status_shipped: "Отправлен",
+    status_delivered: "Доставлен",
+    in_stock_count: "{count} в наличии",
+    sku_label: "Арт.:",
+    date_and_time: "Дата и время",
+    add_to_cart_success: "Товар добавлен в корзину!",
+    composition_title: "Состав заказа",
+    order_sum: "Итого к оплате"
   }
 };

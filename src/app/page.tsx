@@ -279,7 +279,6 @@ function HomeContent() {
           <div style={{ width: '80px', height: '80px', background: 'rgba(255,255,255,0.03)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
              <Search size={32} style={{ opacity: 0.2 }} />
           </div>
-          </div>
           <h3 style={{ fontSize: '1.75rem', marginBottom: '0.5rem', fontWeight: 800 }}>{t('no_products')}</h3>
           <p style={{ color: 'var(--text-muted)' }}>{t('no_products_filter_desc')}</p>
           <button 
