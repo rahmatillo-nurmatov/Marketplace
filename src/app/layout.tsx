@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
+import { Sidebar } from "@/components/Sidebar";
+import { MobileLayout } from "@/components/MobileLayout";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,8 +21,6 @@ export const metadata: Metadata = {
   description: "Next Generation E-commerce Platform",
 };
 
-import { Sidebar } from "@/components/Sidebar";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,15 +28,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      </head>
       <body className="antialiased">
         <Providers>
-          <div className="app-container">
-            <Sidebar />
-            <main className="main-content">
-              <Navbar />
-              {children}
-            </main>
-          </div>
+          <MobileLayout>
+            {children}
+          </MobileLayout>
         </Providers>
       </body>
     </html>

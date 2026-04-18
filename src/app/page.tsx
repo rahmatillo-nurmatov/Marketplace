@@ -118,7 +118,7 @@ function HomeContent() {
     <div style={{ paddingBottom: '6rem' }}>
       
       {/* Hero Section */}
-      <div className="glass-card" style={{ 
+      <div className="glass-card hero-section" style={{ 
         height: '380px',
         marginBottom: '3rem', 
         position: 'relative',
@@ -129,6 +129,7 @@ function HomeContent() {
         {slides.map((slide, index) => (
           <div 
             key={index}
+            className="hero-content"
             style={{ 
               position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
               opacity: currentSlide === index ? 1 : 0, transition: 'opacity 1s ease-in-out',
@@ -140,14 +141,15 @@ function HomeContent() {
                 <Star size={16} fill="var(--accent)" />
                 <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>{t('trending_now')}</span>
               </div>
-              <h1 style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1rem', lineHeight: 1 }}>{slide.title}</h1>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.25rem', marginBottom: '2rem' }}>{slide.desc}</p>
-              <button className="btn-neon" style={{ alignSelf: 'flex-start', padding: '1rem 2rem' }}>{t('view_catalog')}</button>
+              <h1 className="hero-title" style={{ fontSize: '3.5rem', fontWeight: 900, marginBottom: '1rem', lineHeight: 1 }}>{slide.title}</h1>
+              <p className="hero-desc" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.25rem', marginBottom: '2rem' }}>{slide.desc}</p>
+              <button className="btn-neon hero-btn" style={{ alignSelf: 'flex-start', padding: '1rem 2rem' }}>{t('view_catalog')}</button>
             </div>
             
             <img 
               src={slide.img} 
               alt="" 
+              className="hero-img"
               style={{ 
                 position: 'absolute', right: 0, top: 0, width: '60%', height: '100%', 
                 objectFit: 'cover', maskImage: 'linear-gradient(to left, black 60%, transparent)',
@@ -163,9 +165,9 @@ function HomeContent() {
       {/* SEARCH AND FILTERS TOOLBAR */}
       <div style={{ position: 'sticky', top: '1rem', zIndex: 100, marginBottom: '3rem' }}>
         <div className="glass-card" style={{ padding: '1rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
-           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }} className="filters-toolbar">
               {/* Search Bar */}
-              <div style={{ flex: 1, position: 'relative' }}>
+              <div style={{ flex: 1, position: 'relative' }} className="filters-search">
                  <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
                  <input 
                    placeholder={t('search_products')}
@@ -182,7 +184,7 @@ function HomeContent() {
               </div>
 
               {/* Category Dropdown (Mobile simplified to toolbar) */}
-              <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '2px' }} className="hide-scrollbar">
+              <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '2px' }} className="hide-scrollbar filters-categories">
                 {categories.map(cat => (
                   <button
                     key={cat.id}
@@ -269,7 +271,7 @@ function HomeContent() {
            <p style={{ color: 'var(--text-muted)' }}>{t('loading_products')}</p>
         </div>
       ) : filteredProducts.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2.5rem' }} className="products-grid">
           {filteredProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
