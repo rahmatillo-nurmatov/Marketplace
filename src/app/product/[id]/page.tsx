@@ -33,6 +33,8 @@ export default function ProductDetailsPage() {
   const [selectedSize, setSelectedSize] = useState('');
   const [activeImage, setActiveImage] = useState(0);
   
+  const [reviewSort, setReviewSort] = useState<'newest' | 'highest' | 'lowest' | 'relevant'>('newest');
+  const [reviewFilter, setReviewFilter] = useState<number>(0); // 0 = all
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(5);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -259,12 +261,82 @@ export default function ProductDetailsPage() {
 
       {/* Reviews Section */}
       <div style={{ maxWidth: '800px' }}>
-         <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '3rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+         <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <MessageSquare size={28} /> {t('reviews')}
+            <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 600 }}>({reviews.length})</span>
          </h2>
 
+         {/* Rating summary */}
+         {reviews.length > 0 && (() => {
+           const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+           const counts = [5,4,3,2,1].map(star => ({ star, count: reviews.filter(r => r.rating === star).length }));
+           return (
+             <div className="glass-card" style={{ padding: '1.5rem 2rem', marginBottom: '2rem', display: 'flex', gap: '2.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+               <div style={{ textAlign: 'center', minWidth: '80px' }}>
+                 <div style={{ fontSize: '3.5rem', fontWeight: 900, color: '#F59E0B', lineHeight: 1 }}>{avg.toFixed(1)}</div>
+                 <div style={{ display: 'flex', color: '#F59E0B', justifyContent: 'center', margin: '0.4rem 0' }}>
+                   {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.round(avg) ? 'currentColor' : 'none'} />)}
+                 </div>
+                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{reviews.length} {t('reviews')}</div>
+               </div>
+               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: '160px' }}>
+                 {counts.map(({ star, count }) => (
+                   <button
+                     key={star}
+                     onClick={() => setReviewFilter(reviewFilter === star ? 0 : star)}
+                     style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0' }}
+                   >
+                     <span style={{ fontSize: '0.75rem', color: reviewFilter === star ? '#F59E0B' : 'var(--text-muted)', width: '10px', fontWeight: 700 }}>{star}</span>
+                     <Star size={12} fill={reviewFilter === star ? '#F59E0B' : 'none'} color={reviewFilter === star ? '#F59E0B' : 'var(--text-muted)'} />
+                     <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: 'var(--border)', overflow: 'hidden' }}>
+                       <div style={{ height: '100%', width: `${reviews.length ? (count / reviews.length) * 100 : 0}%`, background: reviewFilter === star ? '#F59E0B' : 'rgba(245,158,11,0.4)', borderRadius: '3px', transition: 'width 0.3s' }} />
+                     </div>
+                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', width: '20px', textAlign: 'right' }}>{count}</span>
+                   </button>
+                 ))}
+               </div>
+             </div>
+           );
+         })()}
+
+         {/* Sort & Filter bar */}
+         {reviews.length > 0 && (
+           <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', alignItems: 'center' }}>
+             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginRight: '0.25rem' }}>{t('sort_by')}:</span>
+             {([
+               { key: 'newest', label: t('sort_newest') },
+               { key: 'highest', label: '★ ' + t('sort_price_high').replace('Price: ', '') },
+               { key: 'lowest', label: '★ ' + t('sort_price_low').replace('Price: ', '') },
+               { key: 'relevant', label: t('rating') },
+             ] as const).map(opt => (
+               <button
+                 key={opt.key}
+                 onClick={() => setReviewSort(opt.key)}
+                 style={{
+                   padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+                   background: reviewSort === opt.key ? 'var(--primary)' : 'rgba(255,255,255,0.04)',
+                   color: reviewSort === opt.key ? 'white' : 'var(--text-muted)',
+                   border: reviewSort === opt.key ? '1px solid var(--primary)' : '1px solid var(--border)',
+                   transition: 'all 0.2s'
+                 }}
+               >
+                 {opt.label}
+               </button>
+             ))}
+             {reviewFilter > 0 && (
+               <button
+                 onClick={() => setReviewFilter(0)}
+                 style={{ padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.3)' }}
+               >
+                 ★ {reviewFilter} ✕
+               </button>
+             )}
+           </div>
+         )}
+
+         {/* Leave review form */}
          {user && hasBought ? (
-           <form onSubmit={handleAddReview} className="glass-card" style={{ padding: '2rem', marginBottom: '4rem' }}>
+           <form onSubmit={handleAddReview} className="glass-card" style={{ padding: '2rem', marginBottom: '2.5rem' }}>
               <h4 style={{ marginBottom: '1.5rem', fontWeight: 700 }}>{t('leave_review')}</h4>
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
                  {[1, 2, 3, 4, 5].map(star => (
@@ -285,40 +357,52 @@ export default function ProductDetailsPage() {
               </button>
            </form>
          ) : user ? (
-           <div className="glass-card" style={{ padding: '2rem', marginBottom: '4rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid rgba(138, 63, 252, 0.3)', background: 'rgba(138, 63, 252, 0.05)' }}>
+           <div className="glass-card" style={{ padding: '2rem', marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid rgba(138, 63, 252, 0.3)', background: 'rgba(138, 63, 252, 0.05)' }}>
               <ShieldCheck size={24} color="var(--primary)" />
-              <div style={{ fontSize: '0.9rem' }}>
-                 {t('verified_purchase_only')}
-              </div>
+              <div style={{ fontSize: '0.9rem' }}>{t('verified_purchase_only')}</div>
            </div>
          ) : (
-           <div className="glass-card" style={{ padding: '2.5rem', marginBottom: '4rem', textAlign: 'center' }}>
+           <div className="glass-card" style={{ padding: '2.5rem', marginBottom: '2.5rem', textAlign: 'center' }}>
               <p style={{ color: 'var(--text-muted)' }}>{t('login_to_review')}</p>
            </div>
          )}
 
-         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {reviews.length > 0 ? reviews.map(review => (
-              <div key={review.id} style={{ borderBottom: '1px solid var(--border)', paddingBottom: '2rem' }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>
-                          <User size={16} />
-                       </div>
-                       <span style={{ fontWeight: 700 }}>{review.clientId.substring(0,6)}...</span>
-                    </div>
-                    <div style={{ display: 'flex', color: '#F59E0B' }}>
-                       {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < review.rating ? 'currentColor' : 'none'} />)}
-                    </div>
-                 </div>
-                 <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>{review.comment}</p>
-                 <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.2)', marginTop: '0.75rem' }}>{new Date(review.createdAt).toLocaleDateString()}</div>
-              </div>
-            )) : (
-              <div style={{ textAlign: 'center', padding: '4rem', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
-                 {t('no_reviews_yet')}
-              </div>
-            )}
+         {/* Reviews list */}
+         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {(() => {
+              let sorted = [...reviews];
+              if (reviewFilter > 0) sorted = sorted.filter(r => r.rating === reviewFilter);
+              switch (reviewSort) {
+                case 'highest': sorted.sort((a, b) => b.rating - a.rating); break;
+                case 'lowest':  sorted.sort((a, b) => a.rating - b.rating); break;
+                case 'relevant': sorted.sort((a, b) => (b.rating * 2 + b.createdAt / 1e12) - (a.rating * 2 + a.createdAt / 1e12)); break;
+                default: sorted.sort((a, b) => b.createdAt - a.createdAt);
+              }
+              if (sorted.length === 0) return (
+                <div style={{ textAlign: 'center', padding: '4rem', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
+                  {reviewFilter > 0 ? `Нет отзывов с оценкой ${reviewFilter} ★` : t('no_reviews_yet')}
+                </div>
+              );
+              return sorted.map(review => (
+                <div key={review.id} className="glass-card" style={{ padding: '1.5rem' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                         <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700, flexShrink: 0 }}>
+                            <User size={16} />
+                         </div>
+                         <div>
+                           <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{review.clientId.substring(0,8)}...</span>
+                           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>{new Date(review.createdAt).toLocaleDateString()}</div>
+                         </div>
+                      </div>
+                      <div style={{ display: 'flex', color: '#F59E0B', gap: '2px' }}>
+                         {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < review.rating ? 'currentColor' : 'none'} />)}
+                      </div>
+                   </div>
+                   <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.95rem' }}>{review.comment}</p>
+                </div>
+              ));
+            })()}
          </div>
       </div>
     </div>

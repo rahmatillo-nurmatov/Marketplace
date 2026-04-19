@@ -25,14 +25,15 @@ export const reviewService = {
   async getReviewsByProduct(productId: string): Promise<Review[]> {
     const q = query(
       collection(db, COLLECTION_NAME), 
-      where('productId', '==', productId),
-      orderBy('createdAt', 'desc')
+      where('productId', '==', productId)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const reviews = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as Review));
+    // Sort in memory to avoid requiring a Firestore composite index
+    return reviews.sort((a, b) => b.createdAt - a.createdAt);
   },
 
   async getReviewsBySeller(sellerId: string): Promise<any[]> {
