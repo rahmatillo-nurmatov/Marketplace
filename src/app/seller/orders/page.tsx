@@ -59,8 +59,9 @@ export default function SellerOrders() {
   const handleClearAll = async () => {
     setLoading(true);
     try {
-      await orderService.deleteAllOrders();
-      setOrders([]);
+      const delivered = orders.filter(o => o.status === 'delivered');
+      await Promise.all(delivered.map(o => orderService.deleteOrder(o.id)));
+      setOrders(prev => prev.filter(o => o.status !== 'delivered'));
       setSelectedOrder(null);
     } catch (e) { console.error(e); }
     finally { setLoading(false); setConfirmClearAll(false); }
@@ -341,6 +342,7 @@ export default function SellerOrders() {
                            </button>
                         </td>
                         <td style={{ padding: '1.25rem 1rem' }}>
+                           {order.status === 'delivered' && (
                            <button
                              onClick={() => handleDelete(order.id)}
                              disabled={deleting === order.id}
@@ -351,6 +353,7 @@ export default function SellerOrders() {
                            >
                              <Trash2 size={15} />
                            </button>
+                           )}
                         </td>
                      </tr>
                    ))}

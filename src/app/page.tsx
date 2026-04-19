@@ -135,7 +135,10 @@ function HomeContent() {
   // Close sort dropdown on outside click
   useEffect(() => {
     if (!showSortDropdown) return;
-    const handler = () => setShowSortDropdown(false);
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-sort-dropdown]')) setShowSortDropdown(false);
+    };
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
   }, [showSortDropdown]);
@@ -252,9 +255,10 @@ function HomeContent() {
                    <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <ArrowUpDown size={14} /> {t('sort_by')}
                    </h4>
-                   <div style={{ position: 'relative' }}>
+                   <div style={{ position: 'relative' }} data-sort-dropdown>
                      <button
                        onClick={() => setShowSortDropdown(v => !v)}
+                       data-sort-dropdown
                        style={{
                          width: '100%', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                          background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)',
@@ -268,7 +272,7 @@ function HomeContent() {
                      </button>
 
                      {showSortDropdown && (
-                       <div style={{
+                       <div data-sort-dropdown style={{
                          position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 200,
                          background: 'rgba(14,13,22,0.85)', backdropFilter: 'blur(20px) saturate(180%)',
                          border: '1px solid var(--border)', borderRadius: '16px',

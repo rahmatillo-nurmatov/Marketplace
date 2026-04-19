@@ -44,8 +44,9 @@ export default function HistoryPage() {
     if (!user?.uid) return;
     setLoading(true);
     try {
-      await orderService.deleteOrdersByClient(user.uid);
-      setOrders([]);
+      const delivered = orders.filter(o => o.status === 'delivered');
+      await Promise.all(delivered.map(o => orderService.deleteOrder(o.id)));
+      setOrders(prev => prev.filter(o => o.status !== 'delivered'));
     } catch (e) { console.error(e); }
     finally { setLoading(false); setConfirmClear(false); }
   };
@@ -141,7 +142,8 @@ export default function HistoryPage() {
                     {expandedOrder === order.id ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                   </div>
 
-                  {/* Delete button */}
+                  {/* Delete button — only for delivered orders */}
+                  {order.status === 'delivered' && (
                   <button
                     onClick={() => handleDelete(order.id)}
                     disabled={deleting === order.id}
@@ -152,6 +154,7 @@ export default function HistoryPage() {
                   >
                     <Trash2 size={16} />
                   </button>
+                  )}
                 </div>
 
                 {/* Expanded Order Details */}
