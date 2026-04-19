@@ -31,9 +31,11 @@ export default function HistoryPage() {
   const toggleExpand = (id: string) => setExpandedOrder(prev => prev === id ? null : id);
 
   const handleDelete = async (id: string) => {
+    const order = orders.find(o => o.id === id);
+    if (!order) return;
     setDeleting(id);
     try {
-      await orderService.deleteOrder(id);
+      await orderService.hideOrderForClient(id, order.status);
       setOrders(prev => prev.filter(o => o.id !== id));
       if (expandedOrder === id) setExpandedOrder(null);
     } catch (e) { console.error(e); }
@@ -44,9 +46,8 @@ export default function HistoryPage() {
     if (!user?.uid) return;
     setLoading(true);
     try {
-      const delivered = orders.filter(o => o.status === 'delivered');
-      await Promise.all(delivered.map(o => orderService.deleteOrder(o.id)));
-      setOrders(prev => prev.filter(o => o.status !== 'delivered'));
+      await orderService.hideAllDeletableForClient(user.uid);
+      setOrders(prev => prev.filter(o => !orderService.isDeletable(o.status)));
     } catch (e) { console.error(e); }
     finally { setLoading(false); setConfirmClear(false); }
   };
@@ -142,8 +143,8 @@ export default function HistoryPage() {
                     {expandedOrder === order.id ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                   </div>
 
-                  {/* Delete button — only for delivered orders */}
-                  {order.status === 'delivered' && (
+                  {/* Delete button — only for delivered/cancelled orders */}
+                  {orderService.isDeletable(order.status) && (
                   <button
                     onClick={() => handleDelete(order.id)}
                     disabled={deleting === order.id}

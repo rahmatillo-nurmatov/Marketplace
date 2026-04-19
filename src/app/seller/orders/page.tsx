@@ -47,9 +47,11 @@ export default function SellerOrders() {
   };
 
   const handleDelete = async (id: string) => {
+    const order = orders.find(o => o.id === id);
+    if (!order) return;
     setDeleting(id);
     try {
-      await orderService.deleteOrder(id);
+      await orderService.hideOrderForClient(id, order.status);
       setOrders(prev => prev.filter(o => o.id !== id));
       if (selectedOrder?.id === id) setSelectedOrder(null);
     } catch (e) { console.error(e); }
@@ -59,9 +61,9 @@ export default function SellerOrders() {
   const handleClearAll = async () => {
     setLoading(true);
     try {
-      const delivered = orders.filter(o => o.status === 'delivered');
-      await Promise.all(delivered.map(o => orderService.deleteOrder(o.id)));
-      setOrders(prev => prev.filter(o => o.status !== 'delivered'));
+      const deletable = orders.filter(o => orderService.isDeletable(o.status));
+      await Promise.all(deletable.map(o => orderService.hideOrderForClient(o.id, o.status)));
+      setOrders(prev => prev.filter(o => !orderService.isDeletable(o.status)));
       setSelectedOrder(null);
     } catch (e) { console.error(e); }
     finally { setLoading(false); setConfirmClearAll(false); }
@@ -342,7 +344,7 @@ export default function SellerOrders() {
                            </button>
                         </td>
                         <td style={{ padding: '1.25rem 1rem' }}>
-                           {order.status === 'delivered' && (
+                           {orderService.isDeletable(order.status) && (
                            <button
                              onClick={() => handleDelete(order.id)}
                              disabled={deleting === order.id}

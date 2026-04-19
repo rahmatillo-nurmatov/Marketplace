@@ -1,15 +1,106 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import { ProductCard } from '@/components/ProductCard';
 import { productService } from '@/lib/services/productService';
 import { Product } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
-  ArrowRight, Star, Search, Filter, 
+  Star, Search,
   ChevronDown, SlidersHorizontal, ArrowUpDown, X, Hash
 } from 'lucide-react';
+
+// Standalone sort dropdown — renders via portal-like fixed positioning
+function SortDropdown({ value, options, onChange }: {
+  value: string;
+  options: { value: string; label: string; icon: string }[];
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Position the list under the button
+  useEffect(() => {
+    if (!open || !btnRef.current || !listRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    listRef.current.style.top = `${rect.bottom + window.scrollY + 8}px`;
+    listRef.current.style.left = `${rect.left}px`;
+    listRef.current.style.width = `${rect.width}px`;
+  }, [open]);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (!btnRef.current?.contains(e.target as Node) && !listRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const selected = options.find(o => o.value === value);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        ref={btnRef}
+        onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }}
+        style={{
+          width: '100%', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)',
+          border: open ? '1px solid var(--primary)' : '1px solid var(--border)',
+          borderRadius: '12px', color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem',
+          transition: 'all 0.2s'
+        }}
+      >
+        <span>{selected?.icon} {selected?.label}</span>
+        <ChevronDown size={16} style={{ opacity: 0.5, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+      </button>
+
+      {open && (
+        <div
+          ref={listRef}
+          style={{
+            position: 'absolute',
+            zIndex: 9999,
+            background: 'rgba(10,9,18,0.97)', backdropFilter: 'blur(24px) saturate(180%)',
+            border: '1px solid rgba(138,63,252,0.3)', borderRadius: '16px',
+            overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(138,63,252,0.1)',
+            top: 0, left: 0 // overridden by useEffect
+          }}
+        >
+          {options.map((opt, i) => (
+            <button
+              key={opt.value}
+              onMouseDown={(e) => { e.stopPropagation(); onChange(opt.value); setOpen(false); }}
+              style={{
+                width: '100%', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                background: value === opt.value ? 'rgba(138,63,252,0.15)' : 'transparent',
+                border: 'none',
+                borderBottom: i < options.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                color: value === opt.value ? 'white' : 'var(--text-muted)',
+                cursor: 'pointer', fontWeight: value === opt.value ? 700 : 500,
+                fontSize: '0.875rem', textAlign: 'left', transition: 'background 0.15s'
+              }}
+              onMouseOver={e => { if (value !== opt.value) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+              onMouseOut={e => { if (value !== opt.value) e.currentTarget.style.background = 'transparent'; }}
+            >
+              <span style={{ fontSize: '1rem' }}>{opt.icon}</span>
+              <span>{opt.label}</span>
+              {value === opt.value && (
+                <span style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 8px var(--primary-glow)', flexShrink: 0 }} />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function HomeContent() {
   const { t } = useLanguage();
@@ -26,7 +117,6 @@ function HomeContent() {
   const [selectedSort, setSelectedSort] = useState('newest');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showFilters, setShowFilters] = useState(false);
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   const selectedCategory = searchParams.get('category') || 'all';
 
@@ -131,17 +221,6 @@ function HomeContent() {
     { value: 'price_low', label: t('sort_price_low'), icon: '↑' },
     { value: 'price_high',label: t('sort_price_high'),icon: '↓' },
   ];
-
-  // Close sort dropdown on outside click
-  useEffect(() => {
-    if (!showSortDropdown) return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('[data-sort-dropdown]')) setShowSortDropdown(false);
-    };
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, [showSortDropdown]);
 
   const categories = [
     { id: 'all', label: t('all_categories') },
@@ -255,55 +334,7 @@ function HomeContent() {
                    <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <ArrowUpDown size={14} /> {t('sort_by')}
                    </h4>
-                   <div style={{ position: 'relative' }} data-sort-dropdown>
-                     <button
-                       onClick={() => setShowSortDropdown(v => !v)}
-                       data-sort-dropdown
-                       style={{
-                         width: '100%', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                         background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)',
-                         border: showSortDropdown ? '1px solid var(--primary)' : '1px solid var(--border)',
-                         borderRadius: '12px', color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem',
-                         transition: 'all 0.2s'
-                       }}
-                     >
-                       <span>{sortOptions.find(o => o.value === selectedSort)?.label}</span>
-                       <ChevronDown size={16} style={{ opacity: 0.5, transform: showSortDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-                     </button>
-
-                     {showSortDropdown && (
-                       <div data-sort-dropdown style={{
-                         position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 200,
-                         background: 'rgba(14,13,22,0.85)', backdropFilter: 'blur(20px) saturate(180%)',
-                         border: '1px solid var(--border)', borderRadius: '16px',
-                         overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(138,63,252,0.1)'
-                       }}>
-                         {sortOptions.map((opt, i) => (
-                           <button
-                             key={opt.value}
-                             onClick={() => { setSelectedSort(opt.value); setShowSortDropdown(false); }}
-                             style={{
-                               width: '100%', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem',
-                               background: selectedSort === opt.value ? 'rgba(138,63,252,0.15)' : 'transparent',
-                               border: 'none',
-                               borderBottom: i < sortOptions.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                               color: selectedSort === opt.value ? 'white' : 'var(--text-muted)',
-                               cursor: 'pointer', fontWeight: selectedSort === opt.value ? 700 : 500,
-                               fontSize: '0.875rem', textAlign: 'left', transition: 'background 0.15s'
-                             }}
-                             onMouseOver={e => { if (selectedSort !== opt.value) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                             onMouseOut={e => { if (selectedSort !== opt.value) e.currentTarget.style.background = 'transparent'; }}
-                           >
-                             <span style={{ fontSize: '1rem' }}>{opt.icon}</span>
-                             <span>{opt.label}</span>
-                             {selectedSort === opt.value && (
-                               <span style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 8px var(--primary-glow)' }} />
-                             )}
-                           </button>
-                         ))}
-                       </div>
-                     )}
-                   </div>
+                   <SortDropdown value={selectedSort} options={sortOptions} onChange={setSelectedSort} />
                 </div>
 
                 {/* Price range */}
