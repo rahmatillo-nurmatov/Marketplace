@@ -24,7 +24,7 @@ function HomeContent() {
   // States for filters
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSort, setSelectedSort] = useState('newest');
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showFilters, setShowFilters] = useState(false);
 
   const selectedCategory = searchParams.get('category') || 'all';
@@ -81,7 +81,9 @@ function HomeContent() {
     }
 
     // 3. Price Filter
-    result = result.filter(p => p.price >= priceRange.min && p.price <= priceRange.max);
+    const minPrice = priceRange.min === '' ? 0 : parseFloat(priceRange.min);
+    const maxPrice = priceRange.max === '' ? Infinity : parseFloat(priceRange.max);
+    result = result.filter(p => p.price >= minPrice && p.price <= maxPrice);
 
     // 4. Sorting
     switch (selectedSort) {
@@ -163,7 +165,7 @@ function HomeContent() {
       </div>
 
       {/* SEARCH AND FILTERS TOOLBAR */}
-      <div style={{ position: 'sticky', top: '1rem', zIndex: 100, marginBottom: '3rem' }}>
+      <div style={{ marginBottom: '3rem' }}>
         <div className="glass-card" style={{ padding: '1rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }} className="filters-toolbar">
               {/* Search Bar */}
@@ -237,7 +239,7 @@ function HomeContent() {
                       <input 
                         type="number" 
                         value={priceRange.min}
-                        onChange={(e) => setPriceRange({ ...priceRange, min: parseInt(e.target.value) || 0 })}
+                        onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
                         style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
                         placeholder="Min"
                       />
@@ -245,7 +247,7 @@ function HomeContent() {
                       <input 
                         type="number" 
                         value={priceRange.max}
-                        onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 0 })}
+                        onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
                         style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
                         placeholder="Max"
                       />
@@ -284,7 +286,7 @@ function HomeContent() {
           <h3 style={{ fontSize: '1.75rem', marginBottom: '0.5rem', fontWeight: 800 }}>{t('no_products')}</h3>
           <p style={{ color: 'var(--text-muted)' }}>{t('no_products_filter_desc')}</p>
           <button 
-            onClick={() => { setSearchQuery(''); handleCategoryChange('all'); setPriceRange({ min: 0, max: 10000 }); }} 
+            onClick={() => { setSearchQuery(''); handleCategoryChange('all'); setPriceRange({ min: '', max: '' }); }} 
             style={{ marginTop: '2rem', background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 800, cursor: 'pointer', textDecoration: 'underline' }}
           >
              {t('reset_filters')}
