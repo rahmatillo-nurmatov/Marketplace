@@ -5,11 +5,13 @@ import { Product } from '@/types';
 
 interface CartItem extends Product {
   quantity: number;
+  selectedColor?: string;
+  selectedSize?: string;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, selectedColor?: string, selectedSize?: string) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -47,15 +49,17 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (product: Product, quantity = 1) => {
+  const addToCart = (product: Product, quantity = 1, selectedColor?: string, selectedSize?: string) => {
     setItems(current => {
-      const existing = current.find(item => item.id === product.id);
+      const existing = current.find(item => item.id === product.id && item.selectedColor === selectedColor && item.selectedSize === selectedSize);
       if (existing) {
         return current.map(item => 
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === product.id && item.selectedColor === selectedColor && item.selectedSize === selectedSize
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
         );
       }
-      return [...current, { ...product, quantity }];
+      return [...current, { ...product, quantity, selectedColor, selectedSize }];
     });
   };
 

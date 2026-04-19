@@ -99,8 +99,8 @@ export default function ProductDetailsPage() {
 
   const handleAddToCart = () => {
     if (product) {
-       addToCart(product);
-       alert(t('add_to_cart_success')); // Or localized string
+       addToCart(product, 1, selectedColor || undefined, selectedSize || undefined);
+       alert(t('add_to_cart_success'));
     }
   };
 

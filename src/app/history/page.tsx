@@ -157,6 +157,21 @@ export default function HistoryPage() {
                           <div>
                              <p style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{item.name}</p>
                              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('sku_label')} {item.productId.substring(0,8)}</p>
+                             {(item.selectedColor || item.selectedSize) && (
+                               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', flexWrap: 'wrap' }}>
+                                 {item.selectedColor && (
+                                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '2px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, background: 'rgba(138,63,252,0.12)', border: '1px solid rgba(138,63,252,0.3)', color: 'var(--primary)' }}>
+                                     <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: item.selectedColor, border: '1px solid rgba(255,255,255,0.2)', display: 'inline-block' }} />
+                                     {item.selectedColor}
+                                   </span>
+                                 )}
+                                 {item.selectedSize && (
+                                   <span style={{ padding: '2px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, background: 'rgba(0,224,255,0.08)', border: '1px solid rgba(0,224,255,0.25)', color: 'var(--accent)' }}>
+                                     {item.selectedSize}
+                                   </span>
+                                 )}
+                               </div>
+                             )}
                           </div>
 
                           {/* Seller */}

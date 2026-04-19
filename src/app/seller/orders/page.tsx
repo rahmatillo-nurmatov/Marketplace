@@ -124,6 +124,21 @@ export default function SellerOrders() {
                                 <div>
                                    <div style={{ fontWeight: 700 }}>{item.name}</div>
                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>${item.price.toFixed(2)} x {item.quantity}</div>
+                                   {(item.selectedColor || item.selectedSize) && (
+                                     <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem', flexWrap: 'wrap' }}>
+                                       {item.selectedColor && (
+                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '2px 8px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700, background: 'rgba(138,63,252,0.12)', border: '1px solid rgba(138,63,252,0.3)', color: 'var(--primary)' }}>
+                                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.selectedColor, border: '1px solid rgba(255,255,255,0.2)', display: 'inline-block' }} />
+                                           {item.selectedColor}
+                                         </span>
+                                       )}
+                                       {item.selectedSize && (
+                                         <span style={{ padding: '2px 8px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700, background: 'rgba(0,224,255,0.08)', border: '1px solid rgba(0,224,255,0.25)', color: '#00e0ff' }}>
+                                           {item.selectedSize}
+                                         </span>
+                                       )}
+                                     </div>
+                                   )}
                                 </div>
                              </div>
                              <div style={{ fontWeight: 800 }}>${(item.price * item.quantity).toFixed(2)}</div>

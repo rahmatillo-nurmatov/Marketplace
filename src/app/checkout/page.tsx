@@ -61,7 +61,9 @@ export default function CheckoutPage() {
           quantity: i.quantity, 
           price: i.price,
           image: i.images?.[0],
-          sellerId: i.sellerId
+          sellerId: i.sellerId,
+          selectedColor: i.selectedColor,
+          selectedSize: i.selectedSize,
         })),
         total,
         status: 'pending',

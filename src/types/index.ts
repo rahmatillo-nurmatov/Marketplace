@@ -42,6 +42,8 @@ export interface OrderItem {
   price: number;
   image?: string;
   sellerId?: string;
+  selectedColor?: string;
+  selectedSize?: string;
 }
 
 export interface Order {
