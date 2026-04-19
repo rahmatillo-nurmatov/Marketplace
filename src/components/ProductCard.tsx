@@ -1,11 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
+import { useCartAnimation } from '@/contexts/CartAnimationContext';
+import { ShoppingCart, Check } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -15,11 +17,23 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { t } = useLanguage();
   const { content } = useProductTranslation(product);
+  const { flyToCart } = useCartAnimation();
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [added, setAdded] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
+
+    // Fly animation
+    if (btnRef.current && product.images[0]) {
+      flyToCart(btnRef.current, product.images[0]);
+    }
+
+    // Brief checkmark feedback
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
   };
 
   return (
@@ -40,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', transition: 'opacity 0.3s', flex: 1, marginRight: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', flex: 1, marginRight: '0.5rem' }}>
               {content.name}
             </h3>
             <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.125rem', whiteSpace: 'nowrap' }}>${product.price}</div>
@@ -51,11 +65,21 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <button
+            ref={btnRef}
             className="btn-neon"
-            style={{ width: '100%', padding: '0.75rem', marginTop: 'auto', fontSize: '0.85rem' }}
+            style={{
+              width: '100%', padding: '0.75rem', marginTop: 'auto', fontSize: '0.85rem',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+              background: added ? '#10B981' : undefined,
+              boxShadow: added ? '0 4px 15px rgba(16,185,129,0.4)' : undefined,
+              transition: 'background 0.3s, box-shadow 0.3s',
+            }}
             onClick={handleAddToCart}
           >
-            {t('add_to_cart')}
+            {added
+              ? <><Check size={16} /> {t('add_to_cart_success')}</>
+              : <><ShoppingCart size={16} /> {t('add_to_cart')}</>
+            }
           </button>
         </div>
       </Link>

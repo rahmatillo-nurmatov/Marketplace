@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCartAnimation } from '@/contexts/CartAnimationContext';
 import { 
   LayoutGrid, ShoppingCart, History, User, 
   Package, ShoppingBag, ShieldCheck, LogOut, MessageSquare, X
@@ -19,6 +20,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
   const { profile, logout } = useAuth();
+  const { cartIconRef } = useCartAnimation();
   
   const userRole = profile?.role || 'client';
 
@@ -91,6 +93,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               href={item.path} 
               className={`nav-item ${pathname === item.path ? 'active' : ''}`}
               onClick={handleLinkClick}
+              ref={item.path === '/cart' ? (el) => { if (el) cartIconRef.current = el; } : undefined}
             >
               <item.icon size={20} />
               {item.label}

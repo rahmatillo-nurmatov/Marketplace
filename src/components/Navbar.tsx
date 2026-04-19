@@ -4,6 +4,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useCartAnimation } from '@/contexts/CartAnimationContext';
 import Link from 'next/link';
 import { Search, Sun, Moon, LogIn } from 'lucide-react';
 
@@ -11,6 +12,7 @@ export function Navbar() {
   const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { cartIconRef } = useCartAnimation();
 
   return (
     <header style={{ 

@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCart } from '@/contexts/CartContext';
+import { useCartAnimation } from '@/contexts/CartAnimationContext';
 import {
   Menu, ShoppingBag, LayoutGrid, ShoppingCart,
   History, User, Sun, Moon
@@ -21,6 +22,7 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
   const { t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { items } = useCart();
+  const { cartIconRef } = useCartAnimation();
 
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
@@ -60,7 +62,9 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
             >
               {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
-            <Link href="/cart" style={{ position: 'relative', color: 'var(--text-muted)', display: 'flex' }}>
+            <Link href="/cart" style={{ position: 'relative', color: 'var(--text-muted)', display: 'flex' }}
+              ref={(el) => { if (el) cartIconRef.current = el; }}
+            >
               <ShoppingCart size={22} />
               {cartCount > 0 && (
                 <span style={{
