@@ -13,13 +13,27 @@ import { Order } from '@/types';
 
 const COLLECTION_NAME = 'orders';
 
+// Recursively remove undefined values — Firestore rejects them
+function stripUndefined<T>(obj: T): T {
+  if (Array.isArray(obj)) return obj.map(stripUndefined) as unknown as T;
+  if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, stripUndefined(v)])
+    ) as T;
+  }
+  return obj;
+}
+
 export const orderService = {
   async createOrder(orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+    const clean = stripUndefined({
       ...orderData,
       createdAt: Date.now(),
       updatedAt: Date.now()
     });
+    const docRef = await addDoc(collection(db, COLLECTION_NAME), clean);
     return docRef.id;
   },
 

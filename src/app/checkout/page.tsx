@@ -55,16 +55,19 @@ export default function CheckoutPage() {
       // 2. Create Order
       await orderService.createOrder({
         clientId: user.uid,
-        items: items.map(i => ({ 
-          productId: i.id, 
-          name: i.name, 
-          quantity: i.quantity, 
-          price: i.price,
-          image: i.images?.[0],
-          sellerId: i.sellerId,
-          selectedColor: i.selectedColor,
-          selectedSize: i.selectedSize,
-        })),
+        items: items.map(i => {
+          const item: Record<string, unknown> = {
+            productId: i.id,
+            name: i.name,
+            quantity: i.quantity,
+            price: i.price,
+          };
+          if (i.images?.[0]) item.image = i.images[0];
+          if (i.sellerId) item.sellerId = i.sellerId;
+          if (i.selectedColor) item.selectedColor = i.selectedColor;
+          if (i.selectedSize) item.selectedSize = i.selectedSize;
+          return item as any;
+        }),
         total,
         status: 'pending',
         shippingAddress: finalAddress,
