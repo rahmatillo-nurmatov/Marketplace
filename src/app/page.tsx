@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { ProductCard } from '@/components/ProductCard';
 import { productService } from '@/lib/services/productService';
 import { Product } from '@/types';
@@ -11,79 +12,102 @@ import {
   ChevronDown, SlidersHorizontal, ArrowUpDown, X, Hash
 } from 'lucide-react';
 
-// Standalone sort dropdown
+// Sort dropdown — list rendered via Portal into body to avoid z-index/overflow issues
 function SortDropdown({ value, options, onChange }: {
   value: string;
   options: { value: string; label: string; icon: string }[];
   onChange: (v: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+      const t = e.target as HTMLElement;
+      if (!t.closest('[data-sort-list]') && !btnRef.current?.contains(t)) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
+  const handleOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+    setOpen(v => !v);
+  };
+
   const selected = options.find(o => o.value === value);
 
+  const list = open && rect && mounted ? createPortal(
+    <div
+      data-sort-list
+      style={{
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 99999,
+        background: 'rgba(10,9,18,0.97)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        border: '1px solid rgba(138,63,252,0.35)',
+        borderRadius: '16px',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.9)',
+        overflow: 'hidden',
+      }}
+    >
+      {options.map((opt, i) => (
+        <button
+          key={opt.value}
+          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onChange(opt.value); setOpen(false); }}
+          style={{
+            width: '100%', padding: '0.85rem 1.25rem',
+            display: 'flex', alignItems: 'center', gap: '0.75rem',
+            background: value === opt.value ? 'rgba(138,63,252,0.18)' : 'transparent',
+            border: 'none',
+            borderBottom: i < options.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+            color: value === opt.value ? 'white' : 'rgba(255,255,255,0.6)',
+            cursor: 'pointer', fontWeight: value === opt.value ? 700 : 500,
+            fontSize: '0.875rem', textAlign: 'left',
+          }}
+          onMouseOver={e => { if (value !== opt.value) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+          onMouseOut={e => { if (value !== opt.value) e.currentTarget.style.background = 'transparent'; }}
+        >
+          <span style={{ fontSize: '1rem', width: '20px', textAlign: 'center' }}>{opt.icon}</span>
+          <span>{opt.label}</span>
+          {value === opt.value && (
+            <span style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 8px var(--primary-glow)', flexShrink: 0 }} />
+          )}
+        </button>
+      ))}
+    </div>,
+    document.body
+  ) : null;
+
   return (
-    <div ref={ref} style={{ position: 'relative', zIndex: open ? 500 : 1 }}>
+    <>
       <button
-        onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }}
+        ref={btnRef}
+        onClick={handleOpen}
         style={{
-          width: '100%', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          width: '100%', padding: '0.75rem 1rem',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           background: open ? 'rgba(138,63,252,0.1)' : 'rgba(255,255,255,0.04)',
           backdropFilter: 'blur(12px)',
           border: open ? '1px solid var(--primary)' : '1px solid var(--border)',
-          borderRadius: open ? '12px 12px 0 0' : '12px',
-          color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem',
-          transition: 'all 0.2s'
+          borderRadius: '12px', color: 'white', cursor: 'pointer',
+          fontWeight: 600, fontSize: '0.875rem', transition: 'all 0.2s',
         }}
       >
         <span>{selected?.icon} {selected?.label}</span>
         <ChevronDown size={16} style={{ opacity: 0.5, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
       </button>
-
-      {open && (
-        <div style={{
-          position: 'absolute', top: '100%', left: 0, right: 0,
-          zIndex: 500,
-          background: 'rgba(10,9,18,0.97)', backdropFilter: 'blur(24px) saturate(180%)',
-          border: '1px solid rgba(138,63,252,0.3)', borderTop: 'none',
-          borderRadius: '0 0 16px 16px',
-          boxShadow: '0 24px 48px rgba(0,0,0,0.8)',
-        }}>
-          {options.map((opt, i) => (
-            <button
-              key={opt.value}
-              onMouseDown={(e) => { e.stopPropagation(); onChange(opt.value); setOpen(false); }}
-              style={{
-                width: '100%', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem',
-                background: value === opt.value ? 'rgba(138,63,252,0.15)' : 'transparent',
-                border: 'none',
-                borderBottom: i < options.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                color: value === opt.value ? 'white' : 'var(--text-muted)',
-                cursor: 'pointer', fontWeight: value === opt.value ? 700 : 500,
-                fontSize: '0.875rem', textAlign: 'left', transition: 'background 0.15s'
-              }}
-              onMouseOver={e => { if (value !== opt.value) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-              onMouseOut={e => { if (value !== opt.value) e.currentTarget.style.background = 'transparent'; }}
-            >
-              <span style={{ fontSize: '1rem' }}>{opt.icon}</span>
-              <span>{opt.label}</span>
-              {value === opt.value && (
-                <span style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 8px var(--primary-glow)', flexShrink: 0 }} />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+      {list}
+    </>
   );
 }
 
