@@ -26,6 +26,7 @@ function HomeContent() {
   const [selectedSort, setSelectedSort] = useState('newest');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showFilters, setShowFilters] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   const selectedCategory = searchParams.get('category') || 'all';
 
@@ -93,6 +94,19 @@ function HomeContent() {
       case 'price_high':
         result.sort((a, b) => b.price - a.price);
         break;
+      case 'rating':
+        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'popular':
+        result.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+        break;
+      case 'relevant':
+        result.sort((a, b) => {
+          const scoreA = (a.rating || 0) * 10 + (a.reviewCount || 0) * 2 + (a.createdAt || 0) / 1e12;
+          const scoreB = (b.rating || 0) * 10 + (b.reviewCount || 0) * 2 + (b.createdAt || 0) / 1e12;
+          return scoreB - scoreA;
+        });
+        break;
       case 'newest':
       default:
         result.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -108,6 +122,23 @@ function HomeContent() {
     else params.set('category', id);
     router.push(`/?${params.toString()}`, { scroll: false });
   };
+
+  const sortOptions = [
+    { value: 'newest',    label: t('sort_newest'),    icon: '🕐' },
+    { value: 'relevant',  label: t('rating'),         icon: '✨' },
+    { value: 'rating',    label: '★ ' + t('avg_rating'),  icon: '⭐' },
+    { value: 'popular',   label: t('total_reviews'),  icon: '🔥' },
+    { value: 'price_low', label: t('sort_price_low'), icon: '↑' },
+    { value: 'price_high',label: t('sort_price_high'),icon: '↓' },
+  ];
+
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    if (!showSortDropdown) return;
+    const handler = () => setShowSortDropdown(false);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [showSortDropdown]);
 
   const categories = [
     { id: 'all', label: t('all_categories') },
@@ -216,21 +247,62 @@ function HomeContent() {
            {/* Expandable Advanced Filters */}
            {showFilters && (
              <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+                {/* Sort */}
                 <div>
                    <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <ArrowUpDown size={14} /> {t('sort_by')}
                    </h4>
-                   <select 
-                     value={selectedSort}
-                     onChange={(e) => setSelectedSort(e.target.value)}
-                     style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
-                   >
-                      <option value="newest" style={{ background: '#12121e' }}>{t('sort_newest')}</option>
-                      <option value="price_low" style={{ background: '#12121e' }}>{t('sort_price_low')}</option>
-                      <option value="price_high" style={{ background: '#12121e' }}>{t('sort_price_high')}</option>
-                   </select>
+                   <div style={{ position: 'relative' }}>
+                     <button
+                       onClick={() => setShowSortDropdown(v => !v)}
+                       style={{
+                         width: '100%', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                         background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)',
+                         border: showSortDropdown ? '1px solid var(--primary)' : '1px solid var(--border)',
+                         borderRadius: '12px', color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem',
+                         transition: 'all 0.2s'
+                       }}
+                     >
+                       <span>{sortOptions.find(o => o.value === selectedSort)?.label}</span>
+                       <ChevronDown size={16} style={{ opacity: 0.5, transform: showSortDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                     </button>
+
+                     {showSortDropdown && (
+                       <div style={{
+                         position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 200,
+                         background: 'rgba(14,13,22,0.85)', backdropFilter: 'blur(20px) saturate(180%)',
+                         border: '1px solid var(--border)', borderRadius: '16px',
+                         overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(138,63,252,0.1)'
+                       }}>
+                         {sortOptions.map((opt, i) => (
+                           <button
+                             key={opt.value}
+                             onClick={() => { setSelectedSort(opt.value); setShowSortDropdown(false); }}
+                             style={{
+                               width: '100%', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                               background: selectedSort === opt.value ? 'rgba(138,63,252,0.15)' : 'transparent',
+                               border: 'none',
+                               borderBottom: i < sortOptions.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                               color: selectedSort === opt.value ? 'white' : 'var(--text-muted)',
+                               cursor: 'pointer', fontWeight: selectedSort === opt.value ? 700 : 500,
+                               fontSize: '0.875rem', textAlign: 'left', transition: 'background 0.15s'
+                             }}
+                             onMouseOver={e => { if (selectedSort !== opt.value) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                             onMouseOut={e => { if (selectedSort !== opt.value) e.currentTarget.style.background = 'transparent'; }}
+                           >
+                             <span style={{ fontSize: '1rem' }}>{opt.icon}</span>
+                             <span>{opt.label}</span>
+                             {selectedSort === opt.value && (
+                               <span style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 8px var(--primary-glow)' }} />
+                             )}
+                           </button>
+                         ))}
+                       </div>
+                     )}
+                   </div>
                 </div>
 
+                {/* Price range */}
                 <div>
                    <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Hash size={14} /> {t('filter_price')}
@@ -240,15 +312,15 @@ function HomeContent() {
                         type="number" 
                         value={priceRange.min}
                         onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
-                        style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
+                        style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '1px solid var(--border)', borderRadius: '12px', color: 'white', outline: 'none', fontSize: '0.875rem' }}
                         placeholder="Min"
                       />
-                      <span style={{ opacity: 0.3 }}>-</span>
+                      <span style={{ opacity: 0.3, flexShrink: 0 }}>—</span>
                       <input 
                         type="number" 
                         value={priceRange.max}
                         onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
-                        style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
+                        style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '1px solid var(--border)', borderRadius: '12px', color: 'white', outline: 'none', fontSize: '0.875rem' }}
                         placeholder="Max"
                       />
                    </div>

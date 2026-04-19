@@ -7,9 +7,9 @@ import { orderService } from '@/lib/services/orderService';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Order } from '@/types';
 import { 
-  ShoppingBag, Clock, CheckCircle, Truck, 
+  ShoppingBag, CheckCircle,
   MapPin, Calendar, Package, ChevronRight, 
-  User, CreditCard, ArrowLeft, RefreshCw
+  User, ArrowLeft, RefreshCw, Trash2, AlertTriangle
 } from 'lucide-react';
 
 export default function SellerOrders() {
@@ -18,6 +18,8 @@ export default function SellerOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -31,23 +33,37 @@ export default function SellerOrders() {
     }
   };
 
-  useEffect(() => {
-    if (user?.uid) {
-      fetchOrders();
-    }
-  }, [user]);
+  useEffect(() => { if (user?.uid) fetchOrders(); }, [user]);
 
   const handleUpdateStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
       await orderService.updateOrderStatus(orderId, newStatus);
-      if (selectedOrder?.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus });
-      }
+      if (selectedOrder?.id === orderId) setSelectedOrder({ ...selectedOrder, status: newStatus });
       fetchOrders();
     } catch (err) {
       console.error(err);
       alert(t('error_occurred'));
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeleting(id);
+    try {
+      await orderService.deleteOrder(id);
+      setOrders(prev => prev.filter(o => o.id !== id));
+      if (selectedOrder?.id === id) setSelectedOrder(null);
+    } catch (e) { console.error(e); }
+    finally { setDeleting(null); }
+  };
+
+  const handleClearAll = async () => {
+    setLoading(true);
+    try {
+      await orderService.deleteAllOrders();
+      setOrders([]);
+      setSelectedOrder(null);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); setConfirmClearAll(false); }
   };
 
   const getStatusColor = (status: string) => {
@@ -242,18 +258,38 @@ export default function SellerOrders() {
   return (
     <ProtectedRoute allowedRoles={['seller', 'admin']}>
       <div style={{ padding: '2rem 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('sidebar_orders')}</h1>
             <p style={{ color: 'var(--text-muted)' }}>{t('orders_management_desc')}</p>
           </div>
-          <button 
-            onClick={fetchOrders}
-            className="glass-card" 
-            style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600 }}
-          >
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} /> {t('update_db')}
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {orders.length > 0 && !confirmClearAll && (
+              <button
+                onClick={() => setConfirmClearAll(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', borderRadius: '12px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#EF4444', fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem', transition: 'all 0.2s' }}
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
+                onMouseOut={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+              >
+                <Trash2 size={16} /> {t('remove')} {t('sidebar_orders')}
+              </button>
+            )}
+            {confirmClearAll && (
+              <div className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 1rem', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '12px' }}>
+                <AlertTriangle size={16} color="#EF4444" />
+                <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{t('delete_confirm')}</span>
+                <button onClick={handleClearAll} style={{ padding: '0.35rem 0.9rem', borderRadius: '8px', background: '#EF4444', color: 'white', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '0.75rem' }}>{t('approve')}</button>
+                <button onClick={() => setConfirmClearAll(false)} style={{ padding: '0.35rem 0.9rem', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', border: '1px solid var(--border)', fontWeight: 700, cursor: 'pointer', fontSize: '0.75rem' }}>{t('cancel')}</button>
+              </div>
+            )}
+            <button 
+              onClick={fetchOrders}
+              className="glass-card" 
+              style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600 }}
+            >
+              <RefreshCw size={18} /> {t('update_db')}
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -271,6 +307,7 @@ export default function SellerOrders() {
                       <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>{t('items_label')}</th>
                       <th style={{ padding: '1.25rem 2rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>{t('order_sum')}</th>
                       <th style={{ padding: '1.25rem 2rem' }}></th>
+                      <th style={{ padding: '1.25rem 1rem' }}></th>
                    </tr>
                 </thead>
                 <tbody>
@@ -301,6 +338,18 @@ export default function SellerOrders() {
                              style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                            >
                              {t('details')} <ChevronRight size={14} />
+                           </button>
+                        </td>
+                        <td style={{ padding: '1.25rem 1rem' }}>
+                           <button
+                             onClick={() => handleDelete(order.id)}
+                             disabled={deleting === order.id}
+                             style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', opacity: deleting === order.id ? 0.5 : 1 }}
+                             onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
+                             onMouseOut={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+                             title={t('remove')}
+                           >
+                             <Trash2 size={15} />
                            </button>
                         </td>
                      </tr>

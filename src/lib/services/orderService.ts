@@ -6,7 +6,9 @@ import {
   where,
   orderBy,
   doc,
-  getDoc
+  getDoc,
+  deleteDoc,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import { Order } from '@/types';
@@ -79,5 +81,24 @@ export const orderService = {
   async checkIfUserBoughtProduct(clientId: string, productId: string): Promise<boolean> {
     const orders = await this.getOrdersByClient(clientId);
     return orders.some(order => order.items.some(item => item.productId === productId));
+  },
+
+  async deleteOrder(id: string): Promise<void> {
+    await deleteDoc(doc(db, COLLECTION_NAME, id));
+  },
+
+  async deleteOrdersByClient(clientId: string): Promise<void> {
+    const q = query(collection(db, COLLECTION_NAME), where('clientId', '==', clientId));
+    const snap = await getDocs(q);
+    const batch = writeBatch(db);
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  },
+
+  async deleteAllOrders(): Promise<void> {
+    const snap = await getDocs(collection(db, COLLECTION_NAME));
+    const batch = writeBatch(db);
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
   }
 };

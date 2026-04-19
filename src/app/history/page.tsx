@@ -5,7 +5,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { orderService } from '@/lib/services/orderService';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Clock, Calendar, Hash, CreditCard, MapPin, Package, User, ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react';
+import { Clock, Calendar, CreditCard, MapPin, Package, User, ChevronDown, ChevronUp, Image as ImageIcon, Trash2, AlertTriangle } from 'lucide-react';
 import { Order } from '@/types';
 
 export default function HistoryPage() {
@@ -14,23 +14,40 @@ export default function HistoryPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchOrders = () => {
     if (user?.uid) {
       orderService.getOrdersByClient(user.uid)
-        .then(data => {
-          if (Array.isArray(data)) setOrders(data);
-          setLoading(false);
-        })
-        .catch(err => {
-           console.error(err);
-           setLoading(false);
-        });
+        .then(data => { if (Array.isArray(data)) setOrders(data); })
+        .catch(console.error)
+        .finally(() => setLoading(false));
     }
-  }, [user]);
+  };
 
-  const toggleExpand = (id: string) => {
-    setExpandedOrder(prev => prev === id ? null : id);
+  useEffect(() => { fetchOrders(); }, [user]);
+
+  const toggleExpand = (id: string) => setExpandedOrder(prev => prev === id ? null : id);
+
+  const handleDelete = async (id: string) => {
+    setDeleting(id);
+    try {
+      await orderService.deleteOrder(id);
+      setOrders(prev => prev.filter(o => o.id !== id));
+      if (expandedOrder === id) setExpandedOrder(null);
+    } catch (e) { console.error(e); }
+    finally { setDeleting(null); }
+  };
+
+  const handleClearAll = async () => {
+    if (!user?.uid) return;
+    setLoading(true);
+    try {
+      await orderService.deleteOrdersByClient(user.uid);
+      setOrders([]);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); setConfirmClear(false); }
   };
 
   const formatTime = (ms: number) => {
@@ -41,20 +58,43 @@ export default function HistoryPage() {
   return (
     <ProtectedRoute allowedRoles={['client', 'seller', 'admin']}>
       <div style={{ padding: '2rem 0', maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '3rem', letterSpacing: '-1px' }}>{t('sidebar_history')}</h1>
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <h1 style={{ fontSize: '3rem', fontWeight: 900, letterSpacing: '-1px' }}>{t('sidebar_history')}</h1>
+          {orders.length > 0 && !confirmClear && (
+            <button
+              onClick={() => setConfirmClear(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '12px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#EF4444', fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem', transition: 'all 0.2s' }}
+              onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
+              onMouseOut={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+            >
+              <Trash2 size={16} /> {t('remove')} {t('sidebar_history')}
+            </button>
+          )}
+          {confirmClear && (
+            <div className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 1.25rem', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '12px' }}>
+              <AlertTriangle size={18} color="#EF4444" />
+              <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{t('delete_confirm')}</span>
+              <button onClick={handleClearAll} style={{ padding: '0.4rem 1rem', borderRadius: '8px', background: '#EF4444', color: 'white', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }}>
+                {t('approve')}
+              </button>
+              <button onClick={() => setConfirmClear(false)} style={{ padding: '0.4rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', border: '1px solid var(--border)', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }}>
+                {t('cancel')}
+              </button>
+            </div>
+          )}
+        </div>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '5rem' }}>{t('processing')}</div>
         ) : orders.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {orders.map(order => (
-              <div key={order.id} className="glass-card" style={{ padding: '2rem', overflow: 'hidden', borderTop: '4px solid var(--primary)' }}>
+              <div key={order.id} className="glass-card" style={{ padding: '2rem', overflow: 'hidden', borderTop: '4px solid var(--primary)', opacity: deleting === order.id ? 0.5 : 1, transition: 'opacity 0.2s' }}>
                 {/* Order Header Summary */}
-                <div 
-                  style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr auto', gap: '2rem', alignItems: 'center', cursor: 'pointer' }}
-                  onClick={() => toggleExpand(order.id)}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr auto auto', gap: '1.5rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }} onClick={() => toggleExpand(order.id)}>
                     <div style={{ width: '48px', height: '48px', background: 'rgba(138, 63, 252, 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Package size={24} color="var(--primary)" />
                     </div>
@@ -97,9 +137,21 @@ export default function HistoryPage() {
                     </div>
                   </div>
                   
-                  <div style={{ color: 'var(--text-muted)' }}>
+                  <div style={{ color: 'var(--text-muted)', cursor: 'pointer' }} onClick={() => toggleExpand(order.id)}>
                     {expandedOrder === order.id ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                   </div>
+
+                  {/* Delete button */}
+                  <button
+                    onClick={() => handleDelete(order.id)}
+                    disabled={deleting === order.id}
+                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', borderRadius: '10px', padding: '0.6rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', flexShrink: 0 }}
+                    onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
+                    onMouseOut={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+                    title={t('remove')}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
 
                 {/* Expanded Order Details */}
