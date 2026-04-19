@@ -11,32 +11,19 @@ import {
   ChevronDown, SlidersHorizontal, ArrowUpDown, X, Hash
 } from 'lucide-react';
 
-// Standalone sort dropdown — renders via portal-like fixed positioning
+// Standalone sort dropdown
 function SortDropdown({ value, options, onChange }: {
   value: string;
   options: { value: string; label: string; icon: string }[];
   onChange: (v: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  // Position the list under the button
-  useEffect(() => {
-    if (!open || !btnRef.current || !listRef.current) return;
-    const rect = btnRef.current.getBoundingClientRect();
-    listRef.current.style.top = `${rect.bottom + window.scrollY + 8}px`;
-    listRef.current.style.left = `${rect.left}px`;
-    listRef.current.style.width = `${rect.width}px`;
-  }, [open]);
-
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (!btnRef.current?.contains(e.target as Node) && !listRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -45,15 +32,16 @@ function SortDropdown({ value, options, onChange }: {
   const selected = options.find(o => o.value === value);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div ref={ref} style={{ position: 'relative', zIndex: open ? 500 : 1 }}>
       <button
-        ref={btnRef}
         onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }}
         style={{
           width: '100%', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)',
+          background: open ? 'rgba(138,63,252,0.1)' : 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(12px)',
           border: open ? '1px solid var(--primary)' : '1px solid var(--border)',
-          borderRadius: '12px', color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem',
+          borderRadius: open ? '12px 12px 0 0' : '12px',
+          color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem',
           transition: 'all 0.2s'
         }}
       >
@@ -62,17 +50,14 @@ function SortDropdown({ value, options, onChange }: {
       </button>
 
       {open && (
-        <div
-          ref={listRef}
-          style={{
-            position: 'absolute',
-            zIndex: 9999,
-            background: 'rgba(10,9,18,0.97)', backdropFilter: 'blur(24px) saturate(180%)',
-            border: '1px solid rgba(138,63,252,0.3)', borderRadius: '16px',
-            overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(138,63,252,0.1)',
-            top: 0, left: 0 // overridden by useEffect
-          }}
-        >
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0,
+          zIndex: 500,
+          background: 'rgba(10,9,18,0.97)', backdropFilter: 'blur(24px) saturate(180%)',
+          border: '1px solid rgba(138,63,252,0.3)', borderTop: 'none',
+          borderRadius: '0 0 16px 16px',
+          boxShadow: '0 24px 48px rgba(0,0,0,0.8)',
+        }}>
           {options.map((opt, i) => (
             <button
               key={opt.value}
