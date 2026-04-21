@@ -43,11 +43,11 @@ export default function CartPage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} style={{ padding: '0.5rem 1rem', background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>-</button>
+                      <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedColor, item.selectedSize)} style={{ padding: '0.5rem 1rem', background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>-</button>
                       <span style={{ padding: '0 1rem', fontWeight: 600 }}>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} style={{ padding: '0.5rem 1rem', background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>+</button>
+                      <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedColor, item.selectedSize)} style={{ padding: '0.5rem 1rem', background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>+</button>
                     </div>
-                    <button onClick={() => removeFromCart(item.id)} style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>{t('remove')}</button>
+                    <button onClick={() => removeFromCart(item.id, item.selectedColor, item.selectedSize)} style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>{t('remove')}</button>
                   </div>
                 </div>
               ))}

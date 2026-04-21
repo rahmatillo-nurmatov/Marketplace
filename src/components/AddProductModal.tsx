@@ -41,32 +41,37 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    
+
+    // Validate required fields
+    const price = parseFloat(formData.price);
+    const cost = parseFloat(formData.cost);
+    const stock = parseInt(formData.stock);
+    if (!formData.name.trim()) return alert('Product name is required');
+    if (isNaN(price) || price <= 0) return alert('Price must be a positive number');
+    if (isNaN(stock) || stock < 0) return alert('Stock must be 0 or more');
+    if (!imageFile) return alert('Please upload a product image');
+
     setLoading(true);
     try {
-      let imageUrl = 'https://via.placeholder.com/600x400?text=Product+Image';
-      
-      if (imageFile) {
-        imageUrl = await storageService.uploadProductImage(imageFile, user.uid);
-      }
+      const imageUrl = await storageService.uploadProductImage(imageFile, user.uid);
 
       await productService.addProduct({
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        cost: parseFloat(formData.cost),
-        stock: parseInt(formData.stock),
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        price,
+        cost: isNaN(cost) ? 0 : cost,
+        stock,
         categoryId: formData.category,
-        colors: formData.colors.split(',').map(c => c.trim()).filter(c => c),
-        sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s),
+        colors: formData.colors.split(',').map(c => c.trim()).filter(Boolean),
+        sizes: formData.sizes.split(',').map(s => s.trim()).filter(Boolean),
         images: [imageUrl],
         sellerId: user.uid,
       });
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Error adding product');
+      alert(err.message || 'Error adding product');
     } finally {
       setLoading(false);
     }

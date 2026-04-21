@@ -38,6 +38,7 @@ export interface PlatformSettings {
 }
 
 const SETTINGS_DOC = 'platform/settings';
+const SUPER_ADMIN_UID = 'Irg2N5ijaaSl3J3TtDyljkdnzNy1';
 
 export const adminService = {
   // ── Users ──────────────────────────────────────────────
@@ -48,10 +49,14 @@ export const adminService = {
   },
 
   async updateUserRole(uid: string, role: AdminUser['role']): Promise<void> {
+    // Super-admin role is immutable
+    if (uid === SUPER_ADMIN_UID) return;
     await updateDoc(doc(db, 'users', uid), { role });
   },
 
   async blockUser(uid: string, blocked: boolean): Promise<void> {
+    // Super-admin cannot be blocked
+    if (uid === SUPER_ADMIN_UID) return;
     await updateDoc(doc(db, 'users', uid), { blocked });
   },
 
@@ -133,7 +138,7 @@ export const adminService = {
     const orders = ordersSnap.docs.map(d => d.data());
     const users = usersSnap.docs.map(d => d.data());
 
-    const gmv = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
+    const gmv = orders.filter(o => o.status !== 'cancelled' && !o.refunded).reduce((s, o) => s + (o.total || 0), 0);
     const commission = gmv * 0.05;
     const sellers = users.filter(u => u.role === 'seller').length;
     const buyers = users.filter(u => u.role === 'client').length;

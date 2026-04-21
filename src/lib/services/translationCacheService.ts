@@ -14,6 +14,7 @@ import { db } from '../firebase/firebase';
 
 const LS_PREFIX = 'tr_cache_';
 const FIRESTORE_COLLECTION = 'translation_cache';
+const TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export interface CachedTranslation {
   name: string;
@@ -31,7 +32,14 @@ function lsKey(productId: string, lang: string) {
 function lsGet(productId: string, lang: string): CachedTranslation | null {
   try {
     const raw = localStorage.getItem(lsKey(productId, lang));
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed: CachedTranslation = JSON.parse(raw);
+    // Expire stale cache
+    if (Date.now() - parsed.cachedAt > TTL_MS) {
+      localStorage.removeItem(lsKey(productId, lang));
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }

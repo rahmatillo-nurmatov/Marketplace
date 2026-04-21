@@ -102,7 +102,7 @@ export default function ProductDetailsPage() {
   const handleAddToCart = () => {
     if (product) {
        addToCart(product, 1, selectedColor || undefined, selectedSize || undefined);
-       alert(t('add_to_cart_success'));
+       // No alert — fly-to-cart animation + button feedback is enough
     }
   };
 

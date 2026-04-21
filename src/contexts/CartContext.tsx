@@ -9,11 +9,16 @@ interface CartItem extends Product {
   selectedSize?: string;
 }
 
+// Unique key per cart line (same product, different color/size = different line)
+function itemKey(id: string, color?: string, size?: string) {
+  return `${id}__${color ?? ''}__${size ?? ''}`;
+}
+
 interface CartContextType {
   items: CartItem[];
   addToCart: (product: Product, quantity?: number, selectedColor?: string, selectedSize?: string) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string, selectedColor?: string, selectedSize?: string) => void;
+  updateQuantity: (productId: string, quantity: number, selectedColor?: string, selectedSize?: string) => void;
   clearCart: () => void;
   total: number;
 }
@@ -32,56 +37,57 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Load from local storage
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (e) {
-        console.error("Failed to parse cart", e);
-      }
-    }
+    try {
+      const saved = localStorage.getItem('cart');
+      if (saved) setItems(JSON.parse(saved));
+    } catch { /* ignore */ }
   }, []);
 
-  // Save to local storage
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
+    // Defer to avoid blocking render
+    const id = setTimeout(() => {
+      localStorage.setItem('cart', JSON.stringify(items));
+    }, 100);
+    return () => clearTimeout(id);
   }, [items]);
 
   const addToCart = (product: Product, quantity = 1, selectedColor?: string, selectedSize?: string) => {
     setItems(current => {
-      const existing = current.find(item => item.id === product.id && item.selectedColor === selectedColor && item.selectedSize === selectedSize);
+      const key = itemKey(product.id, selectedColor, selectedSize);
+      const existing = current.find(i => itemKey(i.id, i.selectedColor, i.selectedSize) === key);
       if (existing) {
-        return current.map(item => 
-          item.id === product.id && item.selectedColor === selectedColor && item.selectedSize === selectedSize
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+        return current.map(i =>
+          itemKey(i.id, i.selectedColor, i.selectedSize) === key
+            ? { ...i, quantity: i.quantity + quantity }
+            : i
         );
       }
       return [...current, { ...product, quantity, selectedColor, selectedSize }];
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setItems(current => current.filter(item => item.id !== productId));
+  const removeFromCart = (productId: string, selectedColor?: string, selectedSize?: string) => {
+    const key = itemKey(productId, selectedColor, selectedSize);
+    setItems(current => current.filter(i => itemKey(i.id, i.selectedColor, i.selectedSize) !== key));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, selectedColor?: string, selectedSize?: string) => {
+    const key = itemKey(productId, selectedColor, selectedSize);
     if (quantity <= 0) {
-      removeFromCart(productId);
+      setItems(current => current.filter(i => itemKey(i.id, i.selectedColor, i.selectedSize) !== key));
       return;
     }
-    setItems(current => current.map(item => 
-      item.id === productId ? { ...item, quantity } : item
-    ));
+    setItems(current =>
+      current.map(i =>
+        itemKey(i.id, i.selectedColor, i.selectedSize) === key ? { ...i, quantity } : i
+      )
+    );
   };
 
-  const clearCart = () => {
-    setItems([]);
-  };
+  const clearCart = () => setItems([]);
 
-  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, total }}>
