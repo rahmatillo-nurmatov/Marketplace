@@ -25,6 +25,21 @@ function SortDropdown({ value, options, onChange }: {
 
   useEffect(() => { setMounted(true); }, []);
 
+  // Update position on scroll/resize — keeps dropdown anchored to button
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+    };
+    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
+    };
+  }, [open]);
+
+  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
