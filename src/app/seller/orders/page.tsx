@@ -24,7 +24,7 @@ export default function SellerOrders() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const data = await orderService.getAllOrders();
+      const data = await orderService.getAllOrders(user?.uid);
       setOrders(data);
     } catch (err) {
       console.error(err);
@@ -48,10 +48,10 @@ export default function SellerOrders() {
 
   const handleDelete = async (id: string) => {
     const order = orders.find(o => o.id === id);
-    if (!order) return;
+    if (!order || !user?.uid) return;
     setDeleting(id);
     try {
-      await orderService.hideOrderForClient(id, order.status, order.clientId);
+      await orderService.hideOrderForSeller(id, order.status, user.uid);
       setOrders(prev => prev.filter(o => o.id !== id));
       if (selectedOrder?.id === id) setSelectedOrder(null);
     } catch (e) { console.error(e); }
@@ -59,10 +59,10 @@ export default function SellerOrders() {
   };
 
   const handleClearAll = async () => {
+    if (!user?.uid) return;
     setLoading(true);
     try {
-      const deletable = orders.filter(o => orderService.isDeletable(o.status));
-      await Promise.all(deletable.map(o => orderService.hideOrderForClient(o.id, o.status, o.clientId)));
+      await orderService.hideAllDeletableForSeller(user.uid, orders);
       setOrders(prev => prev.filter(o => !orderService.isDeletable(o.status)));
       setSelectedOrder(null);
     } catch (e) { console.error(e); }

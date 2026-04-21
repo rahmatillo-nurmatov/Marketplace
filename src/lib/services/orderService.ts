@@ -20,6 +20,7 @@ const DELETABLE_STATUSES: Order['status'][] = ['delivered', 'cancelled'];
 
 // ── localStorage helpers for hidden order IDs ─────────────────────────────
 function lsHiddenKey(clientId: string) { return `hidden_orders_${clientId}`; }
+function lsSellerHiddenKey(sellerId: string) { return `seller_hidden_orders_${sellerId}`; }
 
 function getLocalHiddenIds(clientId: string): Set<string> {
   try {
@@ -33,6 +34,21 @@ function addLocalHiddenId(clientId: string, orderId: string) {
     const ids = getLocalHiddenIds(clientId);
     ids.add(orderId);
     localStorage.setItem(lsHiddenKey(clientId), JSON.stringify([...ids]));
+  } catch {}
+}
+
+function getSellerHiddenIds(sellerId: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(lsSellerHiddenKey(sellerId));
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+
+function addSellerHiddenId(sellerId: string, orderId: string) {
+  try {
+    const ids = getSellerHiddenIds(sellerId);
+    ids.add(orderId);
+    localStorage.setItem(lsSellerHiddenKey(sellerId), JSON.stringify([...ids]));
   } catch {}
 }
 
@@ -87,14 +103,20 @@ export const orderService = {
     return null;
   },
 
-  async getAllOrders(): Promise<Order[]> {
+  async getAllOrders(sellerId?: string): Promise<Order[]> {
     // Seller/admin sees ALL orders regardless of hiddenForClient
     const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(d => ({
+    const all = querySnapshot.docs.map(d => ({
       id: d.id,
       ...d.data()
-    } as Order));
+    } as Order & { hiddenForSeller?: boolean }));
+
+    if (!sellerId) return all;
+
+    // Filter out orders the seller has hidden locally
+    const sellerHidden = getSellerHiddenIds(sellerId);
+    return all.filter(o => !o.hiddenForSeller && !sellerHidden.has(o.id));
   },
 
   async updateOrderStatus(id: string, status: Order['status']): Promise<void> {
@@ -147,6 +169,21 @@ export const orderService = {
     } catch (e) {
       console.warn('Firestore batch hide failed, using local cache only:', e);
     }
+  },
+
+  // Hides order from seller view (localStorage only, no Firestore write)
+  async hideOrderForSeller(id: string, status: Order['status'], sellerId: string): Promise<void> {
+    if (!DELETABLE_STATUSES.includes(status)) {
+      throw new Error(`Cannot delete order with status "${status}"`);
+    }
+    addSellerHiddenId(sellerId, id);
+  },
+
+  // Hides all deletable orders for seller
+  async hideAllDeletableForSeller(sellerId: string, orders: Order[]): Promise<void> {
+    orders
+      .filter(o => DELETABLE_STATUSES.includes(o.status))
+      .forEach(o => addSellerHiddenId(sellerId, o.id));
   },
 
   isDeletable(status: Order['status']): boolean {
