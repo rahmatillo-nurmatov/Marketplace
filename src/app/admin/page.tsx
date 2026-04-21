@@ -1,130 +1,81 @@
 "use client";
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { productService } from '@/lib/services/productService';
 import { orderService } from '@/lib/services/orderService';
-import { reviewService } from '@/lib/services/reviewService';
 import { adminService, AdminUser, PlatformSettings } from '@/lib/services/adminService';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Product, Order } from '@/types';
 import Link from 'next/link';
 import {
-  ShieldCheck, Users, Package, ShoppingBag, Star, Settings,
-  BarChart2, RefreshCw, CheckCircle, XCircle, Clock, Trash2,
-  Ban, UserCheck, ChevronDown, ChevronUp, ExternalLink,
-  Download, TrendingUp, DollarSign, AlertTriangle, MessageSquare,
-  Gavel, Sliders, Save, Eye, EyeOff
+  Users, Package, ShoppingBag, Star, Settings, BarChart2,
+  RefreshCw, CheckCircle, XCircle, Trash2, Ban, UserCheck,
+  ChevronDown, ChevronUp, ExternalLink, Download,
+  TrendingUp, DollarSign, AlertTriangle, Gavel, Save, Eye, EyeOff
 } from 'lucide-react';
 
-// ── Shared styles ──────────────────────────────────────────────────────────
-const card = {
-  background: 'rgba(255,255,255,0.03)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: '16px',
-  padding: '1.5rem',
-};
+type T = (key: any, vars?: any) => string;
 
-const statCard = (color: string) => ({
-  ...card,
-  borderLeft: `3px solid ${color}`,
-});
+const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '1.5rem' };
+const statCard = (c: string): React.CSSProperties => ({ ...card, borderLeft: `3px solid ${c}` });
+const badge = (c: string): React.CSSProperties => ({ padding: '3px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700, background: `${c}20`, color: c, border: `1px solid ${c}40`, display: 'inline-block' });
+const btn = (c = 'var(--primary)', ghost = false): React.CSSProperties => ({ padding: '0.5rem 1.1rem', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: ghost ? `${c}15` : c, color: ghost ? c : 'white', border: `1px solid ${ghost ? c + '50' : 'transparent'}`, transition: 'all 0.2s' });
 
-const badge = (color: string) => ({
-  padding: '3px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700,
-  background: `${color}20`, color, border: `1px solid ${color}40`,
-  display: 'inline-block',
-});
-
-const btn = (color = 'var(--primary)', ghost = false) => ({
-  padding: '0.5rem 1.1rem', borderRadius: '10px', fontWeight: 700, cursor: 'pointer',
-  fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-  background: ghost ? `${color}15` : color,
-  color: ghost ? color : 'white',
-  border: `1px solid ${ghost ? color + '50' : 'transparent'}`,
-  transition: 'all 0.2s',
-});
-
-const TABS = [
-  { id: 'dashboard', label: 'Dashboard', icon: BarChart2 },
-  { id: 'users',     label: 'Users',     icon: Users },
-  { id: 'catalog',   label: 'Catalog',   icon: Package },
-  { id: 'orders',    label: 'Orders',    icon: ShoppingBag },
-  { id: 'reviews',   label: 'Reviews',   icon: Star },
-  { id: 'disputes',  label: 'Disputes',  icon: Gavel },
-  { id: 'settings',  label: 'Settings',  icon: Settings },
-];
-
-// ── Main component ─────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const { t } = useLanguage();
   const [tab, setTab] = useState('dashboard');
-
+  const TABS = [
+    { id: 'dashboard', label: t('tab_dashboard'), icon: BarChart2 },
+    { id: 'users',     label: t('tab_users'),     icon: Users },
+    { id: 'catalog',   label: t('tab_catalog'),   icon: Package },
+    { id: 'orders',    label: t('tab_orders'),    icon: ShoppingBag },
+    { id: 'reviews',   label: t('tab_reviews'),   icon: Star },
+    { id: 'disputes',  label: t('tab_disputes'),  icon: Gavel },
+    { id: 'settings',  label: t('tab_settings'),  icon: Settings },
+  ];
   return (
     <ProtectedRoute allowedRoles={['admin']}>
-      <div style={{ padding: '1.5rem 0', minHeight: '100vh' }}>
-        {/* Header */}
+      <div style={{ padding: '1.5rem 0' }}>
         <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-1px', marginBottom: '0.25rem' }}>
-            Admin Panel
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Full platform control</p>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-1px', marginBottom: '0.25rem' }}>{t('admin_panel_title')}</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('admin_panel_desc')}</p>
         </div>
-
-        {/* Tab bar */}
         <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '2.5rem', overflowX: 'auto', paddingBottom: '4px' }} className="hide-scrollbar">
           {TABS.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => setTab(id)} style={{
-              padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer',
-              fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap',
-              background: tab === id ? 'var(--primary)' : 'rgba(255,255,255,0.04)',
-              color: tab === id ? 'white' : 'var(--text-muted)',
-              border: tab === id ? '1px solid var(--primary)' : '1px solid var(--border)',
-              transition: 'all 0.2s',
-            }}>
+            <button key={id} onClick={() => setTab(id)} style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap', background: tab === id ? 'var(--primary)' : 'rgba(255,255,255,0.04)', color: tab === id ? 'white' : 'var(--text-muted)', border: tab === id ? '1px solid var(--primary)' : '1px solid var(--border)', transition: 'all 0.2s' }}>
               <Icon size={15} /> {label}
             </button>
           ))}
         </div>
-
-        {/* Tab content */}
-        {tab === 'dashboard' && <TabDashboard />}
-        {tab === 'users'     && <TabUsers />}
+        {tab === 'dashboard' && <TabDashboard t={t} />}
+        {tab === 'users'     && <TabUsers t={t} />}
         {tab === 'catalog'   && <TabCatalog t={t} />}
-        {tab === 'orders'    && <TabOrders />}
-        {tab === 'reviews'   && <TabReviews />}
-        {tab === 'disputes'  && <TabDisputes />}
-        {tab === 'settings'  && <TabSettings />}
+        {tab === 'orders'    && <TabOrders t={t} />}
+        {tab === 'reviews'   && <TabReviews t={t} />}
+        {tab === 'disputes'  && <TabDisputes t={t} />}
+        {tab === 'settings'  && <TabSettings t={t} />}
       </div>
     </ProtectedRoute>
   );
 }
 
-// ── Tab: Dashboard ─────────────────────────────────────────────────────────
-function TabDashboard() {
+function TabDashboard({ t }: { t: T }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    adminService.getAnalytics().then(setData).catch(console.error).finally(() => setLoading(false));
-  }, []);
-
+  useEffect(() => { adminService.getAnalytics().then(setData).catch(console.error).finally(() => setLoading(false)); }, []);
   if (loading) return <Loader />;
-
   const kpis = [
-    { label: 'GMV', value: `$${data.gmv.toFixed(0)}`, icon: TrendingUp, color: '#8a3ffc' },
-    { label: 'Commission', value: `$${data.commission.toFixed(0)}`, icon: DollarSign, color: '#10B981' },
-    { label: 'Orders', value: data.totalOrders, icon: ShoppingBag, color: '#F59E0B' },
-    { label: 'Users', value: data.totalUsers, icon: Users, color: '#00e0ff' },
-    { label: 'Sellers', value: data.sellers, icon: UserCheck, color: '#8a3ffc' },
-    { label: 'Buyers', value: data.buyers, icon: Users, color: '#10B981' },
-    { label: 'Products', value: data.totalProducts, icon: Package, color: '#F59E0B' },
-    { label: 'Reviews', value: data.totalReviews, icon: Star, color: '#EF4444' },
+    { label: t('kpi_gmv'),       value: `$${data.gmv.toFixed(0)}`,        icon: TrendingUp,  color: '#8a3ffc' },
+    { label: t('kpi_commission'), value: `$${data.commission.toFixed(0)}`, icon: DollarSign,  color: '#10B981' },
+    { label: t('tab_orders'),     value: data.totalOrders,                 icon: ShoppingBag, color: '#F59E0B' },
+    { label: t('tab_users'),      value: data.totalUsers,                  icon: Users,       color: '#00e0ff' },
+    { label: t('kpi_sellers'),    value: data.sellers,                     icon: UserCheck,   color: '#8a3ffc' },
+    { label: t('kpi_buyers'),     value: data.buyers,                      icon: Users,       color: '#10B981' },
+    { label: t('tab_catalog'),    value: data.totalProducts,               icon: Package,     color: '#F59E0B' },
+    { label: t('tab_reviews'),    value: data.totalReviews,                icon: Star,        color: '#EF4444' },
   ];
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* KPI grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
         {kpis.map(k => (
           <div key={k.label} style={statCard(k.color)}>
@@ -136,14 +87,10 @@ function TabDashboard() {
           </div>
         ))}
       </div>
-
-      {/* Monthly GMV chart (CSS bars) */}
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ fontWeight: 800 }}>Monthly GMV</h3>
-          <button style={btn('#10B981', true)} onClick={() => adminService.exportCsv(data.monthlyGmv, 'gmv.csv')}>
-            <Download size={14} /> Export CSV
-          </button>
+          <h3 style={{ fontWeight: 800 }}>{t('monthly_gmv')}</h3>
+          <button style={btn('#10B981', true)} onClick={() => adminService.exportCsv(data.monthlyGmv, 'gmv.csv')}><Download size={14} /> {t('export_csv')}</button>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', height: '120px' }}>
           {data.monthlyGmv.map((m: any) => {
@@ -159,22 +106,18 @@ function TabDashboard() {
           })}
         </div>
       </div>
-
-      {/* Top products */}
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ fontWeight: 800 }}>Top Products by Revenue</h3>
-          <button style={btn('#10B981', true)} onClick={() => adminService.exportCsv(data.topProducts, 'top-products.csv')}>
-            <Download size={14} /> Export
-          </button>
+          <h3 style={{ fontWeight: 800 }}>{t('top_products_revenue')}</h3>
+          <button style={btn('#10B981', true)} onClick={() => adminService.exportCsv(data.topProducts, 'top-products.csv')}><Download size={14} /> {t('export_csv')}</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {data.topProducts.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No data yet</p>}
+          {data.topProducts.length === 0 && <p style={{ color: 'var(--text-muted)' }}>{t('no_data_yet')}</p>}
           {data.topProducts.map((p: any, i: number) => (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '10px' }}>
               <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
               <span style={{ flex: 1, fontWeight: 600 }}>{p.name}</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{p.count} sold</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{p.count} {t('sold')}</span>
               <span style={{ color: '#10B981', fontWeight: 800 }}>${p.revenue.toFixed(0)}</span>
             </div>
           ))}
@@ -184,66 +127,37 @@ function TabDashboard() {
   );
 }
 
-// ── Tab: Users ─────────────────────────────────────────────────────────────
-function TabUsers() {
+function TabUsers({ t }: { t: T }) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'client' | 'seller' | 'admin'>('all');
+  const [filter, setFilter] = useState<'all'|'client'|'seller'|'admin'>('all');
   const [search, setSearch] = useState('');
-
-  const load = () => {
-    setLoading(true);
-    adminService.getAllUsers().then(setUsers).catch(console.error).finally(() => setLoading(false));
-  };
+  const load = () => { setLoading(true); adminService.getAllUsers().then(setUsers).catch(console.error).finally(() => setLoading(false)); };
   useEffect(load, []);
-
-  const handleRole = async (uid: string, role: AdminUser['role']) => {
-    await adminService.updateUserRole(uid, role);
-    setUsers(prev => prev.map(u => u.uid === uid ? { ...u, role } : u));
-  };
-
-  const handleBlock = async (uid: string, blocked: boolean) => {
-    await adminService.blockUser(uid, blocked);
-    setUsers(prev => prev.map(u => u.uid === uid ? { ...u, blocked } : u));
-  };
-
-  const handleDelete = async (uid: string) => {
-    if (!confirm('Delete this user permanently?')) return;
-    await adminService.deleteUser(uid);
-    setUsers(prev => prev.filter(u => u.uid !== uid));
-  };
-
+  const handleRole = async (uid: string, role: AdminUser['role']) => { await adminService.updateUserRole(uid, role); setUsers(p => p.map(u => u.uid === uid ? { ...u, role } : u)); };
+  const handleBlock = async (uid: string, blocked: boolean) => { await adminService.blockUser(uid, blocked); setUsers(p => p.map(u => u.uid === uid ? { ...u, blocked } : u)); };
+  const handleDelete = async (uid: string) => { if (!confirm(t('delete_user_confirm'))) return; await adminService.deleteUser(uid); setUsers(p => p.filter(u => u.uid !== uid)); };
   const roleColor = (r: string) => r === 'admin' ? '#8a3ffc' : r === 'seller' ? '#F59E0B' : '#10B981';
-
-  const visible = users.filter(u =>
-    (filter === 'all' || u.role === filter) &&
-    (!search || u.email?.includes(search) || u.displayName?.toLowerCase().includes(search.toLowerCase()))
-  );
-
+  const visible = users.filter(u => (filter === 'all' || u.role === filter) && (!search || u.email?.includes(search) || u.displayName?.toLowerCase().includes(search.toLowerCase())));
   if (loading) return <Loader />;
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Toolbar */}
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by email or name…"
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search_user')}
           style={{ flex: 1, minWidth: '200px', padding: '0.6rem 1rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', outline: 'none' }} />
         {(['all','client','seller','admin'] as const).map(r => (
-          <button key={r} onClick={() => setFilter(r)} style={{
-            ...btn(r === 'all' ? 'var(--primary)' : roleColor(r), filter !== r),
-          }}>{r}</button>
+          <button key={r} onClick={() => setFilter(r)} style={btn(r === 'all' ? 'var(--primary)' : roleColor(r), filter !== r)}>
+            {r === 'all' ? t('all_categories') : r}
+          </button>
         ))}
-        <button style={btn('#10B981', true)} onClick={() => adminService.exportCsv(visible.map(u => ({ uid: u.uid, email: u.email, role: u.role, blocked: u.blocked })), 'users.csv')}>
-          <Download size={14} /> CSV
-        </button>
+        <button style={btn('#10B981', true)} onClick={() => adminService.exportCsv(visible.map(u => ({ uid: u.uid, email: u.email, role: u.role, blocked: u.blocked })), 'users.csv')}><Download size={14} /> CSV</button>
         <button style={btn('var(--primary)', true)} onClick={load}><RefreshCw size={14} /></button>
       </div>
-
       <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)' }}>
-              {['User', 'Role', 'Status', 'Joined', 'Actions'].map(h => (
+              {[t('col_user'), t('col_role'), t('col_status'), t('col_joined'), t('col_actions')].map(h => (
                 <th key={h} style={{ padding: '1rem 1.25rem', textAlign: 'left', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800 }}>{h}</th>
               ))}
             </tr>
@@ -254,7 +168,7 @@ function TabUsers() {
                 <td style={{ padding: '1rem 1.25rem' }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{u.displayName || '—'}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{u.email}</div>
-                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>{u.uid.substring(0, 12)}…</div>
+                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>{u.uid.substring(0,12)}…</div>
                 </td>
                 <td style={{ padding: '1rem 1.25rem' }}>
                   <select value={u.role} onChange={e => handleRole(u.uid, e.target.value as AdminUser['role'])}
@@ -264,101 +178,80 @@ function TabUsers() {
                     <option value="admin">admin</option>
                   </select>
                 </td>
-                <td style={{ padding: '1rem 1.25rem' }}>
-                  <span style={badge(u.blocked ? '#EF4444' : '#10B981')}>{u.blocked ? 'Blocked' : 'Active'}</span>
-                </td>
-                <td style={{ padding: '1rem 1.25rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}
-                </td>
+                <td style={{ padding: '1rem 1.25rem' }}><span style={badge(u.blocked ? '#EF4444' : '#10B981')}>{u.blocked ? t('status_blocked') : t('status_active_user')}</span></td>
+                <td style={{ padding: '1rem 1.25rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
                 <td style={{ padding: '1rem 1.25rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button style={btn(u.blocked ? '#10B981' : '#F59E0B', true)} onClick={() => handleBlock(u.uid, !u.blocked)}>
-                      {u.blocked ? <UserCheck size={13} /> : <Ban size={13} />}
-                      {u.blocked ? 'Unblock' : 'Block'}
+                      {u.blocked ? <UserCheck size={13} /> : <Ban size={13} />} {u.blocked ? t('btn_unblock') : t('btn_block')}
                     </button>
-                    <button style={btn('#EF4444', true)} onClick={() => handleDelete(u.uid)}>
-                      <Trash2 size={13} />
-                    </button>
+                    <button style={btn('#EF4444', true)} onClick={() => handleDelete(u.uid)}><Trash2 size={13} /></button>
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {visible.length === 0 && <p style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No users found</p>}
+        {visible.length === 0 && <p style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>{t('no_users')}</p>}
       </div>
     </div>
   );
 }
 
-// ── Tab: Catalog ───────────────────────────────────────────────────────────
-function TabCatalog({ t }: { t: any }) {
+function TabCatalog({ t }: { t: T }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [filter, setFilter] = useState<'all'|'pending'|'approved'|'rejected'>('pending');
+  const statusColor = (s: string) => s === 'approved' ? '#10B981' : s === 'rejected' ? '#EF4444' : '#F59E0B';
+  const statusLabel = (s: string) => s === 'approved' ? t('approved') : s === 'rejected' ? t('status_rejected') : t('status_waiting');
 
   const load = async () => {
     setLoading(true);
     try {
-      const snap = await import('firebase/firestore').then(({ getDocs, collection, query, where }) => {
-        const { db } = require('@/lib/firebase/firebase');
-        if (filter === 'all') return getDocs(collection(db, 'products'));
-        return getDocs(query(collection(db, 'products'), where('status', '==', filter)));
-      });
+      const { getDocs, collection, query, where } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase/firebase');
+      const snap = filter === 'all'
+        ? await getDocs(collection(db, 'products'))
+        : await getDocs(query(collection(db, 'products'), where('status', '==', filter)));
       setProducts(snap.docs.map((d: any) => ({ id: d.id, ...d.data() } as Product)));
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
   useEffect(() => { load(); }, [filter]);
 
-  const handle = async (id: string, status: 'approved' | 'rejected') => {
-    await productService.updateProductStatus(id, status);
-    setProducts(prev => prev.filter(p => p.id !== id));
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete product permanently?')) return;
-    await productService.deleteProduct(id);
-    setProducts(prev => prev.filter(p => p.id !== id));
-  };
-
-  const statusColor = (s: string) => s === 'approved' ? '#10B981' : s === 'rejected' ? '#EF4444' : '#F59E0B';
+  const handle = async (id: string, status: 'approved'|'rejected') => { await productService.updateProductStatus(id, status); setProducts(p => p.filter(x => x.id !== id)); };
+  const handleDelete = async (id: string) => { if (!confirm(t('delete_product_confirm'))) return; await productService.deleteProduct(id); setProducts(p => p.filter(x => x.id !== id)); };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
         {(['pending','approved','rejected','all'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={btn(statusColor(f === 'all' ? 'approved' : f), filter !== f)}>
-            {f}
+            {f === 'all' ? t('all_categories') : statusLabel(f)}
           </button>
         ))}
         <button style={btn('var(--primary)', true)} onClick={load}><RefreshCw size={14} /></button>
       </div>
-
       {loading ? <Loader /> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {products.length === 0 && <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center' }}>No products</p>}
+          {products.length === 0 && <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center' }}>{t('no_products_admin')}</p>}
           {products.map(p => (
             <div key={p.id} style={{ ...card, display: 'grid', gridTemplateColumns: '80px 1fr auto', gap: '1.5rem', alignItems: 'center' }}>
               <img src={p.images?.[0]} alt="" style={{ width: 80, height: 80, borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--border)' }} />
               <div>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 800 }}>{p.name}</span>
-                  <span style={badge(statusColor(p.status))}>{p.status}</span>
-                  {p.isPromoted && <span style={badge('#00e0ff')}>Promoted</span>}
+                  <span style={badge(statusColor(p.status))}>{statusLabel(p.status)}</span>
+                  {p.isPromoted && <span style={badge('#00e0ff')}>{t('promoted')}</span>}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  ${p.price} · Stock: {p.stock} · Seller: {p.sellerId?.substring(0,8)}…
+                  ${p.price} · {t('stock_label')}: {p.stock} · {t('seller_label')} {p.sellerId?.substring(0,8)}…
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 <Link href={`/product/${p.id}`} style={btn('var(--primary)', true)}><ExternalLink size={13} /></Link>
-                {p.status !== 'approved' && (
-                  <button style={btn('#10B981', true)} onClick={() => handle(p.id, 'approved')}><CheckCircle size={13} /> Approve</button>
-                )}
-                {p.status !== 'rejected' && (
-                  <button style={btn('#F59E0B', true)} onClick={() => handle(p.id, 'rejected')}><XCircle size={13} /> Reject</button>
-                )}
+                {p.status !== 'approved' && <button style={btn('#10B981', true)} onClick={() => handle(p.id, 'approved')}><CheckCircle size={13} /> {t('btn_approve')}</button>}
+                {p.status !== 'rejected' && <button style={btn('#F59E0B', true)} onClick={() => handle(p.id, 'rejected')}><XCircle size={13} /> {t('btn_reject')}</button>}
                 <button style={btn('#EF4444', true)} onClick={() => handleDelete(p.id)}><Trash2 size={13} /></button>
               </div>
             </div>
@@ -369,44 +262,36 @@ function TabCatalog({ t }: { t: any }) {
   );
 }
 
-// ── Tab: Orders ────────────────────────────────────────────────────────────
-function TabOrders() {
+function TabOrders({ t }: { t: T }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<string | null>(null);
-
-  const load = () => {
-    setLoading(true);
-    orderService.getAllOrders().then(setOrders).catch(console.error).finally(() => setLoading(false));
-  };
+  const [expanded, setExpanded] = useState<string|null>(null);
+  const load = () => { setLoading(true); orderService.getAllOrders().then(setOrders).catch(console.error).finally(() => setLoading(false)); };
   useEffect(load, []);
-
   const handleRefund = async (id: string) => {
-    if (!confirm('Refund and cancel this order?')) return;
+    if (!confirm(t('refund_confirm'))) return;
     await adminService.refundOrder(id);
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'cancelled' } : o));
+    setOrders(p => p.map(o => o.id === id ? { ...o, status: 'cancelled' } : o));
   };
-
   const statusColor = (s: string) => ({ pending:'#F59E0B', processing:'#3B82F6', shipped:'#8B5CF6', delivered:'#10B981', cancelled:'#EF4444', paid:'#00e0ff' }[s] || '#6B7280');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{orders.length} total orders</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('total_orders_count', { count: orders.length })}</span>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button style={btn('#10B981', true)} onClick={() => adminService.exportCsv(orders.map(o => ({ id: o.id, status: o.status, total: o.total, client: o.clientId, date: new Date(o.createdAt).toLocaleDateString() })), 'orders.csv')}>
-            <Download size={14} /> CSV
+            <Download size={14} /> {t('export_csv')}
           </button>
           <button style={btn('var(--primary)', true)} onClick={load}><RefreshCw size={14} /></button>
         </div>
       </div>
-
       {loading ? <Loader /> : (
         <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)' }}>
-                {['Order', 'Client', 'Status', 'Total', 'Date', 'Actions'].map(h => (
+                {[t('col_order'), t('col_client'), t('col_status'), t('col_total'), t('col_date'), t('col_actions')].map(h => (
                   <th key={h} style={{ padding: '0.9rem 1.1rem', textAlign: 'left', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800 }}>{h}</th>
                 ))}
               </tr>
@@ -421,10 +306,10 @@ function TabOrders() {
                     <td style={{ padding: '0.9rem 1.1rem', fontWeight: 800, color: '#10B981' }}>${o.total.toFixed(2)}</td>
                     <td style={{ padding: '0.9rem 1.1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(o.createdAt).toLocaleDateString()}</td>
                     <td style={{ padding: '0.9rem 1.1rem' }}>
-                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                         {o.status !== 'cancelled' && (
                           <button style={btn('#EF4444', true)} onClick={e => { e.stopPropagation(); handleRefund(o.id); }}>
-                            <AlertTriangle size={12} /> Refund
+                            <AlertTriangle size={12} /> {t('btn_refund')}
                           </button>
                         )}
                         {expanded === o.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -454,40 +339,29 @@ function TabOrders() {
               ))}
             </tbody>
           </table>
-          {orders.length === 0 && <p style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>No orders</p>}
+          {orders.length === 0 && <p style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>{t('no_orders_admin')}</p>}
         </div>
       )}
     </div>
   );
 }
 
-// ── Tab: Reviews ───────────────────────────────────────────────────────────
-function TabReviews() {
+function TabReviews({ t }: { t: T }) {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const load = () => {
-    setLoading(true);
-    adminService.getAllReviews().then(setReviews).catch(console.error).finally(() => setLoading(false));
-  };
+  const load = () => { setLoading(true); adminService.getAllReviews().then(setReviews).catch(console.error).finally(() => setLoading(false)); };
   useEffect(load, []);
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this review?')) return;
-    await adminService.deleteReview(id);
-    setReviews(prev => prev.filter(r => r.id !== id));
-  };
+  const handleDelete = async (id: string) => { if (!confirm(t('delete_review_confirm'))) return; await adminService.deleteReview(id); setReviews(p => p.filter(r => r.id !== id)); };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{reviews.length} reviews</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('reviews_count', { count: reviews.length })}</span>
         <button style={btn('var(--primary)', true)} onClick={load}><RefreshCw size={14} /></button>
       </div>
-
       {loading ? <Loader /> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {reviews.length === 0 && <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center' }}>No reviews</p>}
+          {reviews.length === 0 && <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center' }}>{t('no_reviews_admin')}</p>}
           {reviews.map(r => (
             <div key={r.id} style={card}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
@@ -497,12 +371,10 @@ function TabReviews() {
                     {[...Array(5)].map((_, i) => <Star key={i} size={12} fill={i < r.rating ? 'currentColor' : 'none'} />)}
                   </div>
                 </div>
-                <button style={btn('#EF4444', true)} onClick={() => handleDelete(r.id)}><Trash2 size={12} /> Delete</button>
+                <button style={btn('#EF4444', true)} onClick={() => handleDelete(r.id)}><Trash2 size={12} /> {t('btn_delete')}</button>
               </div>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '0.5rem' }}>{r.comment}</p>
-              <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)' }}>
-                Product: {r.productId?.substring(0,8)}… · {new Date(r.createdAt).toLocaleDateString()}
-              </div>
+              <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)' }}>{t('col_product')}: {r.productId?.substring(0,8)}… · {new Date(r.createdAt).toLocaleDateString()}</div>
             </div>
           ))}
         </div>
@@ -511,84 +383,60 @@ function TabReviews() {
   );
 }
 
-// ── Tab: Disputes ──────────────────────────────────────────────────────────
-function TabDisputes() {
+function TabDisputes({ t }: { t: T }) {
   const [disputes, setDisputes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any>(null);
   const [resolution, setResolution] = useState('');
-
-  const load = () => {
-    setLoading(true);
-    adminService.getDisputes().then(setDisputes).catch(console.error).finally(() => setLoading(false));
-  };
+  const load = () => { setLoading(true); adminService.getDisputes().then(setDisputes).catch(console.error).finally(() => setLoading(false)); };
   useEffect(load, []);
-
   const handleResolve = async (refund: boolean) => {
     if (!selected || !resolution.trim()) return;
     await adminService.resolveDispute(selected.id, resolution, refund, selected.orderId);
-    setDisputes(prev => prev.filter(d => d.id !== selected.id));
-    setSelected(null);
-    setResolution('');
+    setDisputes(p => p.filter(d => d.id !== selected.id)); setSelected(null); setResolution('');
   };
-
   const handleReject = async () => {
     if (!selected || !resolution.trim()) return;
     await adminService.rejectDispute(selected.id, resolution);
-    setDisputes(prev => prev.filter(d => d.id !== selected.id));
-    setSelected(null);
-    setResolution('');
+    setDisputes(p => p.filter(d => d.id !== selected.id)); setSelected(null); setResolution('');
   };
+  const dColor = (s: string) => s === 'open' ? '#F59E0B' : s === 'resolved' ? '#10B981' : '#EF4444';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{disputes.filter(d => d.status === 'open').length} open disputes</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('open_disputes_count', { count: disputes.filter(d => d.status === 'open').length })}</span>
         <button style={btn('var(--primary)', true)} onClick={load}><RefreshCw size={14} /></button>
       </div>
-
       {loading ? <Loader /> : (
         <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1.2fr' : '1fr', gap: '1.5rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {disputes.length === 0 && <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center' }}>No disputes</p>}
+            {disputes.length === 0 && <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center' }}>{t('no_disputes')}</p>}
             {disputes.map(d => (
               <div key={d.id} style={{ ...card, cursor: 'pointer', border: selected?.id === d.id ? '1px solid var(--primary)' : undefined }} onClick={() => setSelected(d)}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>Dispute #{d.id.substring(0,8)}</span>
-                  <span style={badge(d.status === 'open' ? '#F59E0B' : d.status === 'resolved' ? '#10B981' : '#EF4444')}>{d.status}</span>
+                  <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>{t('dispute_title', { id: d.id.substring(0,8) })}</span>
+                  <span style={badge(dColor(d.status))}>{d.status}</span>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{d.reason}</p>
-                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)' }}>
-                  Order: {d.orderId?.substring(0,8)}… · {new Date(d.createdAt).toLocaleDateString()}
-                </div>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)' }}>{t('col_order')}: {d.orderId?.substring(0,8)}… · {new Date(d.createdAt).toLocaleDateString()}</div>
               </div>
             ))}
           </div>
-
           {selected && (
             <div style={card}>
-              <h3 style={{ fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Gavel size={18} /> Resolve Dispute
-              </h3>
+              <h3 style={{ fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Gavel size={18} /> {t('resolve_dispute')}</h3>
               <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Reason:</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{t('col_reason')}:</div>
                 <p style={{ fontSize: '0.9rem' }}>{selected.reason}</p>
-                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)', marginTop: '0.5rem' }}>
-                  Order: {selected.orderId} · Client: {selected.clientId?.substring(0,10)}…
-                </div>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)', marginTop: '0.5rem' }}>{t('col_order')}: {selected.orderId} · {t('col_client')}: {selected.clientId?.substring(0,10)}…</div>
               </div>
-              <textarea value={resolution} onChange={e => setResolution(e.target.value)} placeholder="Enter resolution decision…"
+              <textarea value={resolution} onChange={e => setResolution(e.target.value)} placeholder={t('resolution_placeholder')}
                 style={{ width: '100%', minHeight: '100px', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', resize: 'none', outline: 'none', marginBottom: '1rem' }} />
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button style={btn('#10B981')} onClick={() => handleResolve(true)}>
-                  <CheckCircle size={14} /> Resolve + Refund
-                </button>
-                <button style={btn('#3B82F6')} onClick={() => handleResolve(false)}>
-                  <CheckCircle size={14} /> Resolve (No Refund)
-                </button>
-                <button style={btn('#EF4444', true)} onClick={handleReject}>
-                  <XCircle size={14} /> Reject
-                </button>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button style={btn('#10B981')} onClick={() => handleResolve(true)}><CheckCircle size={14} /> {t('resolve_refund')}</button>
+                <button style={btn('#3B82F6')} onClick={() => handleResolve(false)}><CheckCircle size={14} /> {t('resolve_no_refund')}</button>
+                <button style={btn('#EF4444', true)} onClick={handleReject}><XCircle size={14} /> {t('btn_reject')}</button>
               </div>
             </div>
           )}
@@ -598,33 +446,26 @@ function TabDisputes() {
   );
 }
 
-// ── Tab: Settings ──────────────────────────────────────────────────────────
-function TabSettings() {
+function TabSettings({ t }: { t: T }) {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showStripe, setShowStripe] = useState(false);
-
-  useEffect(() => {
-    adminService.getSettings().then(setSettings).catch(console.error).finally(() => setLoading(false));
-  }, []);
+  useEffect(() => { adminService.getSettings().then(setSettings).catch(console.error).finally(() => setLoading(false)); }, []);
 
   const handleSave = async () => {
     if (!settings) return;
     setSaving(true);
-    try {
-      await adminService.saveSettings(settings);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (e) { console.error(e); }
+    try { await adminService.saveSettings(settings); setSaved(true); setTimeout(() => setSaved(false), 2000); }
+    catch (e) { console.error(e); }
     finally { setSaving(false); }
   };
-
-  const set = (key: keyof PlatformSettings, val: any) =>
-    setSettings(prev => prev ? { ...prev, [key]: val } : null);
+  const set = (key: keyof PlatformSettings, val: any) => setSettings(prev => prev ? { ...prev, [key]: val } : null);
 
   if (loading || !settings) return <Loader />;
+
+  const inp: React.CSSProperties = { padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', outline: 'none', width: '100%' };
 
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div style={card}>
@@ -632,86 +473,60 @@ function TabSettings() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>{children}</div>
     </div>
   );
-
   const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: '1rem', alignItems: 'center' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1rem', alignItems: 'center' }}>
       <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>{label}</label>
       {children}
     </div>
   );
 
-  const input = (val: any, onChange: (v: any) => void, type = 'text') => (
-    <input type={type} value={val} onChange={e => onChange(type === 'number' ? parseFloat(e.target.value) : e.target.value)}
-      style={{ padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', outline: 'none', width: '100%' }} />
-  );
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '800px' }}>
-      <Section title="Platform Identity">
-        <Field label="Platform Name">{input(settings.platformName, v => set('platformName', v))}</Field>
-        <Field label="Logo URL">{input(settings.logoUrl, v => set('logoUrl', v))}</Field>
-        <Field label="Primary Color">
+      <Section title={t('settings_identity')}>
+        <Field label={t('platform_name')}><input style={inp} value={settings.platformName} onChange={e => set('platformName', e.target.value)} /></Field>
+        <Field label={t('logo_url')}><input style={inp} value={settings.logoUrl} onChange={e => set('logoUrl', e.target.value)} /></Field>
+        <Field label={t('primary_color')}>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <input type="color" value={settings.primaryColor} onChange={e => set('primaryColor', e.target.value)}
-              style={{ width: '48px', height: '36px', borderRadius: '8px', border: '1px solid var(--border)', cursor: 'pointer', background: 'none' }} />
+            <input type="color" value={settings.primaryColor} onChange={e => set('primaryColor', e.target.value)} style={{ width: '48px', height: '36px', borderRadius: '8px', border: '1px solid var(--border)', cursor: 'pointer', background: 'none' }} />
             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{settings.primaryColor}</span>
           </div>
         </Field>
       </Section>
-
-      <Section title="Financial">
-        <Field label="Commission Rate (%)">
-          {input(settings.commissionRate, v => set('commissionRate', v), 'number')}
-        </Field>
-        <Field label="Seller Subscription ($)">
-          {input(settings.sellerSubscriptionFee, v => set('sellerSubscriptionFee', v), 'number')}
-        </Field>
+      <Section title={t('settings_financial')}>
+        <Field label={t('commission_rate')}><input type="number" style={inp} value={settings.commissionRate} onChange={e => set('commissionRate', parseFloat(e.target.value))} /></Field>
+        <Field label={t('seller_subscription')}><input type="number" style={inp} value={settings.sellerSubscriptionFee} onChange={e => set('sellerSubscriptionFee', parseFloat(e.target.value))} /></Field>
       </Section>
-
-      <Section title="Integrations">
-        <Field label="Stripe API Key">
+      <Section title={t('settings_integrations')}>
+        <Field label={t('stripe_key')}>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <input type={showStripe ? 'text' : 'password'} value={settings.stripeKey} onChange={e => set('stripeKey', e.target.value)}
-              style={{ flex: 1, padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', outline: 'none' }} />
-            <button style={btn('var(--primary)', true)} onClick={() => setShowStripe(v => !v)}>
-              {showStripe ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
+            <input type={showStripe ? 'text' : 'password'} style={{ ...inp, flex: 1 }} value={settings.stripeKey} onChange={e => set('stripeKey', e.target.value)} />
+            <button style={btn('var(--primary)', true)} onClick={() => setShowStripe(v => !v)}>{showStripe ? <EyeOff size={14} /> : <Eye size={14} />}</button>
           </div>
         </Field>
-        <Field label="SMTP Host">{input(settings.smtpHost, v => set('smtpHost', v))}</Field>
+        <Field label={t('smtp_host')}><input style={inp} value={settings.smtpHost} onChange={e => set('smtpHost', e.target.value)} /></Field>
       </Section>
-
-      <Section title="Legal Documents">
+      <Section title={t('settings_legal')}>
         <div>
-          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Terms & Conditions</label>
-          <textarea value={settings.termsText} onChange={e => set('termsText', e.target.value)} rows={5}
-            style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', resize: 'vertical', outline: 'none' }} />
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{t('terms_conditions')}</label>
+          <textarea value={settings.termsText} onChange={e => set('termsText', e.target.value)} rows={5} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', resize: 'vertical', outline: 'none' }} />
         </div>
         <div>
-          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Privacy Policy</label>
-          <textarea value={settings.privacyText} onChange={e => set('privacyText', e.target.value)} rows={5}
-            style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', resize: 'vertical', outline: 'none' }} />
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{t('privacy_policy')}</label>
+          <textarea value={settings.privacyText} onChange={e => set('privacyText', e.target.value)} rows={5} style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', resize: 'vertical', outline: 'none' }} />
         </div>
       </Section>
-
-      <button onClick={handleSave} disabled={saving} style={{
-        ...btn(saved ? '#10B981' : 'var(--primary)'),
-        padding: '0.85rem 2rem', fontSize: '0.95rem', alignSelf: 'flex-start',
-        boxShadow: saved ? '0 0 20px rgba(16,185,129,0.3)' : '0 0 20px var(--primary-glow)',
-      }}>
+      <button onClick={handleSave} disabled={saving} style={{ ...btn(saved ? '#10B981' : 'var(--primary)'), padding: '0.85rem 2rem', fontSize: '0.95rem', alignSelf: 'flex-start', boxShadow: saved ? '0 0 20px rgba(16,185,129,0.3)' : '0 0 20px var(--primary-glow)' }}>
         {saving ? <RefreshCw size={16} /> : <Save size={16} />}
-        {saved ? 'Saved!' : saving ? 'Saving…' : 'Save Settings'}
+        {saved ? t('saved') : saving ? t('saving') : t('save_settings')}
       </button>
     </div>
   );
 }
 
-// ── Shared: Loader ─────────────────────────────────────────────────────────
 function Loader() {
   return (
     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
       <div style={{ width: '36px', height: '36px', border: '3px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 1rem', animation: 'spin 0.8s linear infinite' }} />
-      Loading…
     </div>
   );
 }
