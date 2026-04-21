@@ -42,18 +42,25 @@ export function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
     e.preventDefault();
     if (!user) return;
 
-    // Validate required fields
     const price = parseFloat(formData.price);
     const cost = parseFloat(formData.cost);
     const stock = parseInt(formData.stock);
     if (!formData.name.trim()) return alert('Product name is required');
     if (isNaN(price) || price <= 0) return alert('Price must be a positive number');
     if (isNaN(stock) || stock < 0) return alert('Stock must be 0 or more');
-    if (!imageFile) return alert('Please upload a product image');
 
     setLoading(true);
     try {
-      const imageUrl = await storageService.uploadProductImage(imageFile, user.uid);
+      let imageUrl = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80';
+
+      if (imageFile) {
+        try {
+          imageUrl = await storageService.uploadProductImage(imageFile, user.uid);
+        } catch (uploadErr: any) {
+          console.warn('Storage upload failed, using fallback image:', uploadErr.message);
+          // Continue with fallback — don't block product creation
+        }
+      }
 
       await productService.addProduct({
         name: formData.name.trim(),
