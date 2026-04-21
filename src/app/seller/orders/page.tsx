@@ -51,7 +51,7 @@ export default function SellerOrders() {
     if (!order) return;
     setDeleting(id);
     try {
-      await orderService.hideOrderForClient(id, order.status);
+      await orderService.hideOrderForClient(id, order.status, order.clientId);
       setOrders(prev => prev.filter(o => o.id !== id));
       if (selectedOrder?.id === id) setSelectedOrder(null);
     } catch (e) { console.error(e); }
@@ -62,7 +62,7 @@ export default function SellerOrders() {
     setLoading(true);
     try {
       const deletable = orders.filter(o => orderService.isDeletable(o.status));
-      await Promise.all(deletable.map(o => orderService.hideOrderForClient(o.id, o.status)));
+      await Promise.all(deletable.map(o => orderService.hideOrderForClient(o.id, o.status, o.clientId)));
       setOrders(prev => prev.filter(o => !orderService.isDeletable(o.status)));
       setSelectedOrder(null);
     } catch (e) { console.error(e); }

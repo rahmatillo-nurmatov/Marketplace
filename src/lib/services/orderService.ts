@@ -18,6 +18,24 @@ const COLLECTION_NAME = 'orders';
 // Statuses the client is allowed to hide from their history
 const DELETABLE_STATUSES: Order['status'][] = ['delivered', 'cancelled'];
 
+// ── localStorage helpers for hidden order IDs ─────────────────────────────
+function lsHiddenKey(clientId: string) { return `hidden_orders_${clientId}`; }
+
+function getLocalHiddenIds(clientId: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(lsHiddenKey(clientId));
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+
+function addLocalHiddenId(clientId: string, orderId: string) {
+  try {
+    const ids = getLocalHiddenIds(clientId);
+    ids.add(orderId);
+    localStorage.setItem(lsHiddenKey(clientId), JSON.stringify([...ids]));
+  } catch {}
+}
+
 // Recursively remove undefined values — Firestore rejects them
 function stripUndefined<T>(obj: T): T {
   if (Array.isArray(obj)) return obj.map(stripUndefined) as unknown as T;
@@ -53,9 +71,12 @@ export const orderService = {
       ...d.data()
     } as Order & { hiddenForClient?: boolean }));
 
-    // Filter out orders the client has hidden
+    // Get locally hidden IDs as fallback (in case Firestore write failed)
+    const localHidden = getLocalHiddenIds(clientId);
+
+    // Filter out orders hidden either in Firestore or locally
     return docs
-      .filter(o => !o.hiddenForClient)
+      .filter(o => !o.hiddenForClient && !localHidden.has(o.id))
       .sort((a, b) => b.createdAt - a.createdAt);
   },
 
@@ -87,12 +108,20 @@ export const orderService = {
   },
 
   // Hides order from client history without deleting from Firestore
-  async hideOrderForClient(id: string, status: Order['status']): Promise<void> {
+  async hideOrderForClient(id: string, status: Order['status'], clientId?: string): Promise<void> {
     if (!DELETABLE_STATUSES.includes(status)) {
       throw new Error(`Cannot delete order with status "${status}"`);
     }
-    const docRef = doc(db, COLLECTION_NAME, id);
-    await updateDoc(docRef, { hiddenForClient: true, updatedAt: Date.now() });
+    // Save to localStorage immediately (instant, no network)
+    if (clientId) addLocalHiddenId(clientId, id);
+
+    // Also persist to Firestore (best-effort)
+    try {
+      const docRef = doc(db, COLLECTION_NAME, id);
+      await updateDoc(docRef, { hiddenForClient: true, updatedAt: Date.now() });
+    } catch (e) {
+      console.warn('Firestore hide failed, using local cache only:', e);
+    }
   },
 
   // Hides all delivered/cancelled orders for a client
@@ -100,13 +129,24 @@ export const orderService = {
     const q = query(collection(db, COLLECTION_NAME), where('clientId', '==', clientId));
     const snap = await getDocs(q);
     const batch = writeBatch(db);
+    const idsToHide: string[] = [];
+
     snap.docs.forEach(d => {
       const status = d.data().status as Order['status'];
       if (DELETABLE_STATUSES.includes(status) && !d.data().hiddenForClient) {
         batch.update(d.ref, { hiddenForClient: true, updatedAt: Date.now() });
+        idsToHide.push(d.id);
       }
     });
-    await batch.commit();
+
+    // Save to localStorage immediately
+    idsToHide.forEach(id => addLocalHiddenId(clientId, id));
+
+    try {
+      await batch.commit();
+    } catch (e) {
+      console.warn('Firestore batch hide failed, using local cache only:', e);
+    }
   },
 
   isDeletable(status: Order['status']): boolean {

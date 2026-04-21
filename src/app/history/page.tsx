@@ -35,7 +35,7 @@ export default function HistoryPage() {
     if (!order) return;
     setDeleting(id);
     try {
-      await orderService.hideOrderForClient(id, order.status);
+      await orderService.hideOrderForClient(id, order.status, user?.uid);
       setOrders(prev => prev.filter(o => o.id !== id));
       if (expandedOrder === id) setExpandedOrder(null);
     } catch (e) { console.error(e); }
