@@ -451,17 +451,20 @@ function TabDisputes({ t }: { t: T }) {
 }
 
 function TabMessages({ t }: { t: T }) {
-  const [tab, setTab] = useState<'client' | 'seller'>('client');
+  const [tab, setTab] = useState<'client' | 'seller' | 'all'>('all');
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<ContactMessage | null>(null);
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
 
-  const load = (role: 'client' | 'seller') => {
+  const load = (role: 'client' | 'seller' | 'all') => {
     setLoading(true);
     setSelected(null);
-    contactService.getByRole(role).then(setMessages).catch(console.error).finally(() => setLoading(false));
+    const promise = role === 'all'
+      ? contactService.getAll()
+      : contactService.getByRole(role);
+    promise.then(setMessages).catch(console.error).finally(() => setLoading(false));
   };
 
   useEffect(() => { load(tab); }, [tab]);
@@ -501,15 +504,19 @@ function TabMessages({ t }: { t: T }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: '0.5rem' }}>
-        {(['client', 'seller'] as const).map(r => (
-          <button key={r} onClick={() => setTab(r)} style={{
+        {([
+          { id: 'all',    label: t('all_categories') },
+          { id: 'client', label: t('messages_from_clients') },
+          { id: 'seller', label: t('messages_from_sellers') },
+        ] as const).map(r => (
+          <button key={r.id} onClick={() => setTab(r.id)} style={{
             padding: '0.6rem 1.4rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem',
-            background: tab === r ? 'var(--primary)' : 'rgba(255,255,255,0.04)',
-            color: tab === r ? 'white' : 'var(--text-muted)',
-            border: tab === r ? '1px solid var(--primary)' : '1px solid var(--border)',
+            background: tab === r.id ? 'var(--primary)' : 'rgba(255,255,255,0.04)',
+            color: tab === r.id ? 'white' : 'var(--text-muted)',
+            border: tab === r.id ? '1px solid var(--primary)' : '1px solid var(--border)',
           }}>
-            {r === 'client' ? t('messages_from_clients') : t('messages_from_sellers')}
-            {tab === r && newCount > 0 && (
+            {r.label}
+            {tab === r.id && newCount > 0 && (
               <span style={{ marginLeft: '0.5rem', background: '#EF4444', color: 'white', borderRadius: '20px', padding: '1px 7px', fontSize: '0.7rem' }}>{newCount}</span>
             )}
           </button>

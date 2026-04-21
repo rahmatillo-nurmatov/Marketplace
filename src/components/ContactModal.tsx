@@ -27,6 +27,7 @@ export function ContactModal({ onClose }: Props) {
         senderUid: user.uid,
         senderEmail: user.email || '',
         senderName: profile.displayName || user.email || 'Unknown',
+        // admin treated as client for support purposes
         senderRole: (profile.role === 'seller' ? 'seller' : 'client') as 'client' | 'seller',
         subject: subject.trim(),
         message: message.trim(),

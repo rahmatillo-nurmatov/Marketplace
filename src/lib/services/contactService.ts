@@ -1,6 +1,6 @@
 import {
   collection, addDoc, getDocs, doc,
-  updateDoc, query, orderBy, where
+  updateDoc, deleteDoc, query, orderBy, where
 } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import { ContactMessage } from '@/types';
@@ -17,15 +17,21 @@ export const contactService = {
   },
 
   async getAll(): Promise<ContactMessage[]> {
-    const snap = await getDocs(query(collection(db, COL), orderBy('createdAt', 'desc')));
-    return snap.docs.map(d => ({ id: d.id, ...d.data() } as ContactMessage));
+    // No orderBy to avoid composite index requirement
+    const snap = await getDocs(collection(db, COL));
+    return snap.docs
+      .map(d => ({ id: d.id, ...d.data() } as ContactMessage))
+      .sort((a, b) => b.createdAt - a.createdAt);
   },
 
   async getByRole(role: 'client' | 'seller'): Promise<ContactMessage[]> {
+    // Only where() — no orderBy to avoid needing a Firestore composite index
     const snap = await getDocs(
-      query(collection(db, COL), where('senderRole', '==', role), orderBy('createdAt', 'desc'))
+      query(collection(db, COL), where('senderRole', '==', role))
     );
-    return snap.docs.map(d => ({ id: d.id, ...d.data() } as ContactMessage));
+    return snap.docs
+      .map(d => ({ id: d.id, ...d.data() } as ContactMessage))
+      .sort((a, b) => b.createdAt - a.createdAt);
   },
 
   async markRead(id: string): Promise<void> {
@@ -37,7 +43,6 @@ export const contactService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { deleteDoc } = await import('firebase/firestore');
     await deleteDoc(doc(db, COL, id));
   },
 };
