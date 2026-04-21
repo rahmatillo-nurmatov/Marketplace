@@ -34,10 +34,14 @@ export default function ProfilePage() {
     setIsEditingNick(false);
   };
 
+  const SUPER_ADMIN_UID = 'Irg2N5ijaaSl3J3TtDyljkdnzNy1';
+  const isSuperAdmin = user?.uid === SUPER_ADMIN_UID;
+
   const roles: { id: UserRole; icon: any; color: string; label: string }[] = [
     { id: 'client', icon: ShoppingBag, color: '#3B82F6', label: t('role_buyer') },
     { id: 'seller', icon: Briefcase, color: '#8a3ffc', label: t('role_seller') },
-    { id: 'admin', icon: ShieldAlert, color: '#EF4444', label: t('role_admin') }
+    // Admin role only visible to super-admin
+    ...(isSuperAdmin ? [{ id: 'admin' as UserRole, icon: ShieldAlert, color: '#EF4444', label: t('role_admin') }] : []),
   ];
 
   const handleAddAddress = async () => {

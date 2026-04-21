@@ -115,9 +115,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updateRole = async (newRole: UserRole) => {
     if (!user) return;
-    // Super-admin cannot change their own role
-    if (user.uid === SUPER_ADMIN_UID) return;
-    // Regular users cannot self-assign admin role
+    // Super-admin can switch to any role freely
+    if (user.uid === SUPER_ADMIN_UID) {
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { role: newRole }, { merge: true });
+      setProfile(prev => prev ? { ...prev, role: newRole } : null);
+      return;
+    }
+    // Regular users cannot assign admin role to themselves
     if (newRole === 'admin') return;
     const userDocRef = doc(db, 'users', user.uid);
     await setDoc(userDocRef, { role: newRole }, { merge: true });
