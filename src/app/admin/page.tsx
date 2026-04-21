@@ -11,8 +11,10 @@ import {
   Users, Package, ShoppingBag, Star, Settings, BarChart2,
   RefreshCw, CheckCircle, XCircle, Trash2, Ban, UserCheck,
   ChevronDown, ChevronUp, ExternalLink, Download,
-  TrendingUp, DollarSign, AlertTriangle, Gavel, Save, Eye, EyeOff
+  TrendingUp, DollarSign, AlertTriangle, Gavel, Save, Eye, EyeOff, Mail
 } from 'lucide-react';
+import { contactService } from '@/lib/services/contactService';
+import { ContactMessage } from '@/types';
 
 type T = (key: any, vars?: any) => string;
 
@@ -31,6 +33,7 @@ export default function AdminDashboard() {
     { id: 'orders',    label: t('tab_orders'),    icon: ShoppingBag },
     { id: 'reviews',   label: t('tab_reviews'),   icon: Star },
     { id: 'disputes',  label: t('tab_disputes'),  icon: Gavel },
+    { id: 'messages',  label: t('tab_messages'),  icon: Mail },
     { id: 'settings',  label: t('tab_settings'),  icon: Settings },
   ];
   return (
@@ -53,6 +56,7 @@ export default function AdminDashboard() {
         {tab === 'orders'    && <TabOrders t={t} />}
         {tab === 'reviews'   && <TabReviews t={t} />}
         {tab === 'disputes'  && <TabDisputes t={t} />}
+        {tab === 'messages'  && <TabMessages t={t} />}
         {tab === 'settings'  && <TabSettings t={t} />}
       </div>
     </ProtectedRoute>
@@ -438,6 +442,136 @@ function TabDisputes({ t }: { t: T }) {
                 <button style={btn('#3B82F6')} onClick={() => handleResolve(false)}><CheckCircle size={14} /> {t('resolve_no_refund')}</button>
                 <button style={btn('#EF4444', true)} onClick={handleReject}><XCircle size={14} /> {t('btn_reject')}</button>
               </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TabMessages({ t }: { t: T }) {
+  const [tab, setTab] = useState<'client' | 'seller'>('client');
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<ContactMessage | null>(null);
+  const [reply, setReply] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const load = (role: 'client' | 'seller') => {
+    setLoading(true);
+    setSelected(null);
+    contactService.getByRole(role).then(setMessages).catch(console.error).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(tab); }, [tab]);
+
+  const handleSelect = async (msg: ContactMessage) => {
+    setSelected(msg);
+    setReply(msg.reply || '');
+    if (msg.status === 'new') {
+      await contactService.markRead(msg.id);
+      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'read' } : m));
+    }
+  };
+
+  const handleReply = async () => {
+    if (!selected || !reply.trim()) return;
+    setSending(true);
+    try {
+      await contactService.reply(selected.id, reply.trim());
+      setMessages(prev => prev.map(m => m.id === selected.id ? { ...m, status: 'replied', reply: reply.trim() } : m));
+      setSelected(prev => prev ? { ...prev, status: 'replied', reply: reply.trim() } : null);
+    } catch (e) { console.error(e); }
+    finally { setSending(false); }
+  };
+
+  const handleDelete = async (id: string) => {
+    await contactService.delete(id);
+    setMessages(prev => prev.filter(m => m.id !== id));
+    if (selected?.id === id) setSelected(null);
+  };
+
+  const statusColor = (s: string) => s === 'new' ? '#F59E0B' : s === 'replied' ? '#10B981' : '#6B7280';
+  const statusLabel = (s: string) => s === 'new' ? t('msg_status_new') : s === 'replied' ? t('msg_status_replied') : t('msg_status_read');
+
+  const newCount = messages.filter(m => m.status === 'new').length;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* Sub-tabs */}
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        {(['client', 'seller'] as const).map(r => (
+          <button key={r} onClick={() => setTab(r)} style={{
+            padding: '0.6rem 1.4rem', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem',
+            background: tab === r ? 'var(--primary)' : 'rgba(255,255,255,0.04)',
+            color: tab === r ? 'white' : 'var(--text-muted)',
+            border: tab === r ? '1px solid var(--primary)' : '1px solid var(--border)',
+          }}>
+            {r === 'client' ? t('messages_from_clients') : t('messages_from_sellers')}
+            {tab === r && newCount > 0 && (
+              <span style={{ marginLeft: '0.5rem', background: '#EF4444', color: 'white', borderRadius: '20px', padding: '1px 7px', fontSize: '0.7rem' }}>{newCount}</span>
+            )}
+          </button>
+        ))}
+        <button style={btn('var(--primary)', true)} onClick={() => load(tab)}><RefreshCw size={14} /></button>
+      </div>
+
+      {loading ? <Loader /> : (
+        <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1.4fr' : '1fr', gap: '1.5rem' }}>
+          {/* List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {messages.length === 0 && (
+              <p style={{ color: 'var(--text-muted)', padding: '3rem', textAlign: 'center' }}>{t('msg_no_messages')}</p>
+            )}
+            {messages.map(msg => (
+              <div key={msg.id}
+                onClick={() => handleSelect(msg)}
+                style={{ ...card, cursor: 'pointer', border: selected?.id === msg.id ? '1px solid var(--primary)' : msg.status === 'new' ? '1px solid rgba(245,158,11,0.4)' : undefined, transition: 'all 0.2s' }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                  <span style={{ fontWeight: 800, fontSize: '0.9rem', flex: 1, marginRight: '0.5rem' }}>{msg.subject}</span>
+                  <span style={badge(statusColor(msg.status))}>{statusLabel(msg.status)}</span>
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                  {msg.senderName} · {msg.senderEmail}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)' }}>
+                  {new Date(msg.createdAt).toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Detail */}
+          {selected && (
+            <div style={card}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div>
+                  <h3 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>{selected.subject}</h3>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    {selected.senderName} &lt;{selected.senderEmail}&gt; · {new Date(selected.createdAt).toLocaleString()}
+                  </div>
+                </div>
+                <button style={btn('#EF4444', true)} onClick={() => handleDelete(selected.id)}><Trash2 size={13} /></button>
+              </div>
+
+              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid var(--border)', marginBottom: '1.25rem', lineHeight: 1.7, fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>
+                {selected.message}
+              </div>
+
+              {selected.reply && (
+                <div style={{ padding: '1rem', background: 'rgba(16,185,129,0.06)', borderRadius: '10px', border: '1px solid rgba(16,185,129,0.2)', marginBottom: '1.25rem' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Admin reply</div>
+                  <p style={{ fontSize: '0.9rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{selected.reply}</p>
+                </div>
+              )}
+
+              <textarea value={reply} onChange={e => setReply(e.target.value)} placeholder={t('msg_reply_placeholder')} rows={4}
+                style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '10px', color: 'white', resize: 'none', outline: 'none', marginBottom: '0.75rem' }} />
+              <button style={btn('#10B981')} disabled={sending || !reply.trim()} onClick={handleReply}>
+                <CheckCircle size={14} /> {sending ? t('sending') : t('msg_send_reply')}
+              </button>
             </div>
           )}
         </div>

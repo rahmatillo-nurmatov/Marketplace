@@ -1,14 +1,15 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartAnimation } from '@/contexts/CartAnimationContext';
+import { ContactModal } from './ContactModal';
 import { 
   LayoutGrid, ShoppingCart, History, User, 
-  Package, ShoppingBag, ShieldCheck, LogOut, MessageSquare, X
+  Package, ShoppingBag, ShieldCheck, LogOut, MessageSquare, X, Mail
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -21,6 +22,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { t } = useLanguage();
   const { profile, logout } = useAuth();
   const { cartIconRef } = useCartAnimation();
+  const [showContact, setShowContact] = useState(false);
   
   const userRole = profile?.role || 'client';
 
@@ -149,6 +151,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <p style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase' }}>{userRole}</p>
             </div>
           </div>
+
+          {/* Contact us */}
+          <button
+            onClick={() => { setShowContact(true); onClose?.(); }}
+            style={{ width: '100%', background: 'rgba(0,224,255,0.07)', color: 'var(--accent)', border: '1px solid rgba(0,224,255,0.2)', padding: '0.75rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', marginBottom: '0.75rem' }}
+            onMouseOver={e => e.currentTarget.style.background = 'rgba(0,224,255,0.14)'}
+            onMouseOut={e => e.currentTarget.style.background = 'rgba(0,224,255,0.07)'}
+          >
+            <Mail size={16} />
+            {t('contact_us')}
+          </button>
+
           <button 
             onClick={() => { logout(); onClose?.(); }}
             style={{ width: '100%', background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: 'none', padding: '0.8rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
@@ -160,6 +174,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </button>
         </div>
       </aside>
+
+      {showContact && <ContactModal onClose={() => setShowContact(false)} />}
     </>
   );
 }

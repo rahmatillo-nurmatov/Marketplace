@@ -78,3 +78,16 @@ export interface AppUser {
   displayName?: string;
   photoURL?: string;
 }
+
+export interface ContactMessage {
+  id: string;
+  senderUid: string;
+  senderEmail: string;
+  senderName: string;
+  senderRole: 'client' | 'seller';
+  subject: string;
+  message: string;
+  status: 'new' | 'read' | 'replied';
+  reply?: string;
+  createdAt: number;
+}
